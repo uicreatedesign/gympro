@@ -4,7 +4,7 @@ import { Member, Subscription, Payment, Attendance, PageProps } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, CreditCard, TrendingUp, Download, User } from 'lucide-react';
+import { Calendar, CreditCard, TrendingUp, Download, User, ArrowRight } from 'lucide-react';
 
 interface Props extends PageProps {
     member: Member;
@@ -99,7 +99,7 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                 {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-2">
                     {/* Attendance Card */}
-                    <Card>
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => window.location.href = '/member/attendance'}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Attendance This Month</CardTitle>
                             <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -111,6 +111,9 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                                     Last check-in: {new Date(lastCheckIn.date).toLocaleDateString()} at {lastCheckIn.check_in_time}
                                 </p>
                             )}
+                            <Button variant="link" className="p-0 h-auto mt-2">
+                                View Full History <ArrowRight className="h-3 w-3 ml-1" />
+                            </Button>
                         </CardContent>
                     </Card>
 

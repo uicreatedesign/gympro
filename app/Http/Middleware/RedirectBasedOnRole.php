@@ -13,18 +13,18 @@ class RedirectBasedOnRole
         if (auth()->check()) {
             $user = auth()->user();
             
-            // Check if user has Member role
-            $hasMemberRole = $user->roles()->where('name', 'Member')->exists();
+            // Check if user has admin roles first
+            $hasAdminRole = $user->roles()->whereIn('name', ['Admin', 'Manager', 'Trainer', 'Viewer'])->exists();
             
-            if ($hasMemberRole && $request->is('dashboard')) {
-                return redirect('/member/dashboard');
+            if ($hasAdminRole && $request->is('member/*')) {
+                return redirect('/dashboard');
             }
             
-            // Check if user has admin roles trying to access member dashboard
-            $hasAdminRole = $user->roles()->whereIn('name', ['Admin', 'Manager'])->exists();
+            // Check if user has Member role only
+            $hasMemberRole = $user->roles()->where('name', 'Member')->exists();
             
-            if ($hasAdminRole && $request->is('member/dashboard')) {
-                return redirect('/dashboard');
+            if ($hasMemberRole && !$hasAdminRole && $request->is('dashboard')) {
+                return redirect('/member/dashboard');
             }
         }
         

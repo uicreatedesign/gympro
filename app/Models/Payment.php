@@ -19,6 +19,17 @@ class Payment extends Model
         'transaction_id',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($payment) {
+            if (!$payment->invoice_number) {
+                $payment->invoice_number = self::generateInvoiceNumber();
+            }
+        });
+    }
+
     public function member()
     {
         return $this->belongsTo(Member::class);
