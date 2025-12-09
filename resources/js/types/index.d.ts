@@ -1,0 +1,122 @@
+import { InertiaLinkProps } from '@inertiajs/react';
+import { LucideIcon } from 'lucide-react';
+
+export interface Auth {
+    user: User;
+    permissions: string[];
+}
+
+export interface BreadcrumbItem {
+    title: string;
+    href: string;
+}
+
+export interface NavGroup {
+    title: string;
+    items: NavItem[];
+}
+
+export interface NavItem {
+    title: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
+}
+
+export interface SharedData {
+    name: string;
+    quote: { message: string; author: string };
+    auth: Auth;
+    sidebarOpen: boolean;
+    [key: string]: unknown;
+}
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+    profile_image?: string | null;
+    status?: 'active' | 'inactive';
+    email_verified_at: string | null;
+    two_factor_enabled?: boolean;
+    roles?: Role[];
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Permission {
+    id: number;
+    name: string;
+    description: string | null;
+}
+
+export interface Role {
+    id: number;
+    name: string;
+    description: string | null;
+    permissions: Permission[];
+}
+
+export interface Member {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    gender: 'male' | 'female' | 'other';
+    date_of_birth: string;
+    address: string | null;
+    photo: string | null;
+    join_date: string;
+    status: 'active' | 'inactive' | 'expired';
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Plan {
+    id: number;
+    name: string;
+    duration_months: number;
+    price: string;
+    admission_fee: string;
+    shift: 'morning' | 'evening' | 'full_day';
+    shift_time: string | null;
+    personal_training: boolean;
+    group_classes: boolean;
+    locker_facility: boolean;
+    description: string | null;
+    status: 'active' | 'inactive';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Subscription {
+    id: number;
+    member_id: number;
+    plan_id: number;
+    start_date: string;
+    end_date: string;
+    amount_paid: string;
+    admission_fee_paid: string;
+    payment_status: 'pending' | 'paid' | 'overdue';
+    status: 'active' | 'expired' | 'cancelled';
+    notes: string | null;
+    member?: Member;
+    plan?: Plan;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Attendance {
+    id: number;
+    member_id: number;
+    date: string;
+    check_in_time: string;
+    check_out_time: string | null;
+    notes: string | null;
+    member?: Member;
+    created_at: string;
+    updated_at: string;
+}
