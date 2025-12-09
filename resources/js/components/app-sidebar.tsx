@@ -14,7 +14,7 @@ import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -47,6 +47,11 @@ const mainNavItems: NavItem[] = [
         title: 'Trainers',
         href: '/trainers',
         icon: Dumbbell,
+    },
+    {
+        title: 'Payments',
+        href: '/payments',
+        icon: Wallet,
     },
     {
         title: 'Users',

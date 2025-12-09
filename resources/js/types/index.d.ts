@@ -134,3 +134,21 @@ export interface Trainer {
     created_at: string;
     updated_at: string;
 }
+
+export interface Payment {
+    id: number;
+    member_id: number;
+    subscription_id: number | null;
+    invoice_number: string;
+    amount: string;
+    payment_method: 'cash' | 'card' | 'upi' | 'bank_transfer';
+    payment_type: 'subscription' | 'admission' | 'other';
+    payment_date: string;
+    status: 'completed' | 'pending' | 'failed' | 'refunded';
+    notes: string | null;
+    transaction_id: string | null;
+    member?: Member;
+    subscription?: Subscription;
+    created_at: string;
+    updated_at: string;
+}

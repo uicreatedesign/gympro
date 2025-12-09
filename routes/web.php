@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubscriptionController;
@@ -27,6 +28,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('attendances', AttendanceController::class)->except(['show', 'create', 'edit']);
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
     Route::resource('trainers', TrainerController::class)->except(['show', 'create', 'edit']);
+    Route::resource('payments', PaymentController::class)->except(['show', 'create', 'edit']);
+    Route::get('payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
     
     Route::middleware('can:view_roles')->group(function () {
         Route::get('roles', [RoleController::class, 'index'])->name('roles.index');

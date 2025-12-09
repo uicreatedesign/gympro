@@ -40,6 +40,10 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'create_trainers', 'description' => 'Create new trainers'],
             ['name' => 'edit_trainers', 'description' => 'Edit existing trainers'],
             ['name' => 'delete_trainers', 'description' => 'Delete trainers'],
+            ['name' => 'view_payments', 'description' => 'View payments list'],
+            ['name' => 'create_payments', 'description' => 'Create new payments'],
+            ['name' => 'edit_payments', 'description' => 'Edit existing payments'],
+            ['name' => 'delete_payments', 'description' => 'Delete payments'],
         ];
 
         foreach ($permissions as $permission) {
@@ -60,7 +64,7 @@ class RolePermissionSeeder extends Seeder
             ['description' => 'Limited management access']
         );
         $manager->permissions()->sync(
-            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'create_members', 'edit_members', 'view_plans', 'create_plans', 'edit_plans', 'view_subscriptions', 'create_subscriptions', 'edit_subscriptions', 'view_attendances', 'create_attendances', 'edit_attendances', 'view_trainers', 'create_trainers', 'edit_trainers'])->pluck('id')
+            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'create_members', 'edit_members', 'view_plans', 'create_plans', 'edit_plans', 'view_subscriptions', 'create_subscriptions', 'edit_subscriptions', 'view_attendances', 'create_attendances', 'edit_attendances', 'view_trainers', 'create_trainers', 'edit_trainers', 'view_payments', 'create_payments', 'edit_payments'])->pluck('id')
         );
 
         $viewer = Role::firstOrCreate(
@@ -68,7 +72,7 @@ class RolePermissionSeeder extends Seeder
             ['description' => 'Read-only access']
         );
         $viewer->permissions()->sync(
-            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'view_plans', 'view_subscriptions', 'view_attendances', 'view_trainers'])->pluck('id')
+            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'view_plans', 'view_subscriptions', 'view_attendances', 'view_trainers', 'view_payments'])->pluck('id')
         );
 
         Role::firstOrCreate(
