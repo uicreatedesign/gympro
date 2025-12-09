@@ -2,7 +2,7 @@ import { Plan } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Check, X } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
     plans: Plan[];
@@ -54,13 +54,13 @@ export default function PlanTable({ plans, onEdit, onDelete }: Props) {
                         {(onEdit || onDelete) && (
                             <TableCell className="text-right space-x-2">
                                 {onEdit && (
-                                    <Button variant="outline" size="sm" onClick={() => onEdit(plan)}>
-                                        Edit
+                                    <Button variant="ghost" size="icon" onClick={() => onEdit(plan)}>
+                                        <Pencil className="h-4 w-4" />
                                     </Button>
                                 )}
                                 {onDelete && (
-                                    <Button variant="destructive" size="sm" onClick={() => onDelete(plan)}>
-                                        Delete
+                                    <Button variant="ghost" size="icon" onClick={() => onDelete(plan)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
                                 )}
                             </TableCell>

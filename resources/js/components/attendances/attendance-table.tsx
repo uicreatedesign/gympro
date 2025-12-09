@@ -2,6 +2,7 @@ import { Attendance } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { LogOut, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
     attendances: Attendance[];
@@ -46,29 +47,29 @@ export default function AttendanceTable({ attendances, onCheckOut, onEdit, onDel
                                 <TableCell className="text-right space-x-2">
                                     {onCheckOut && !attendance.check_out_time && (
                                         <Button 
-                                            variant="outline" 
-                                            size="sm" 
+                                            variant="ghost" 
+                                            size="icon" 
                                             onClick={() => onCheckOut(attendance)}
                                         >
-                                            Check Out
+                                            <LogOut className="h-4 w-4" />
                                         </Button>
                                     )}
                                     {onEdit && (
                                         <Button 
-                                            variant="outline" 
-                                            size="sm" 
+                                            variant="ghost" 
+                                            size="icon" 
                                             onClick={() => onEdit(attendance)}
                                         >
-                                            Edit
+                                            <Pencil className="h-4 w-4" />
                                         </Button>
                                     )}
                                     {onDelete && (
                                         <Button 
-                                            variant="destructive" 
-                                            size="sm" 
+                                            variant="ghost" 
+                                            size="icon" 
                                             onClick={() => onDelete(attendance)}
                                         >
-                                            Delete
+                                            <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     )}
                                 </TableCell>

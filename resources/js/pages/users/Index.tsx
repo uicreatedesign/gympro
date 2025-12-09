@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import AuthenticatedLayout from '@/layouts/authenticated-layout';
-import { Head } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Head, usePage } from '@inertiajs/react';
 import { User, Role, PageProps } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users as UsersIcon, UserCheck, UserX, Plus } from 'lucide-react';
 import UserTable from '@/components/users/user-table';
 import CreateUserModal from '@/components/users/create-user-modal';
+import EditUserModal from '@/components/users/edit-user-modal';
+import DeleteUserDialog from '@/components/users/delete-user-dialog';
 
 interface Props extends PageProps {
     users: User[];
@@ -19,18 +21,27 @@ interface Props extends PageProps {
 }
 
 export default function Index({ users, roles, stats }: Props) {
+    const { auth } = usePage().props as any;
     const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [editUser, setEditUser] = useState<User | null>(null);
+    const [deleteUser, setDeleteUser] = useState<User | null>(null);
+
+    const canCreate = auth.permissions.includes('create_users');
+    const canEdit = auth.permissions.includes('edit_users');
+    const canDelete = auth.permissions.includes('delete_users');
 
     return (
-        <AuthenticatedLayout>
+        <AppLayout>
             <Head title="Users" />
-            <div className="space-y-6">
+            <div className="container mx-auto p-6 space-y-6">
                 <div className="flex justify-between items-center">
                     <h1 className="text-3xl font-bold">Users</h1>
-                    <Button onClick={() => setCreateModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add User
-                    </Button>
+                    {canCreate && (
+                        <Button onClick={() => setCreateModalOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add User
+                        </Button>
+                    )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
@@ -63,14 +74,38 @@ export default function Index({ users, roles, stats }: Props) {
                     </Card>
                 </div>
 
-                <UserTable users={users} roles={roles} />
+                <UserTable 
+                    users={users} 
+                    roles={roles}
+                    onEdit={canEdit ? setEditUser : undefined}
+                    onDelete={canDelete ? setDeleteUser : undefined}
+                />
             </div>
 
-            <CreateUserModal
-                open={createModalOpen}
-                onOpenChange={setCreateModalOpen}
-                roles={roles}
-            />
-        </AuthenticatedLayout>
+            {canCreate && (
+                <CreateUserModal
+                    open={createModalOpen}
+                    onOpenChange={setCreateModalOpen}
+                    roles={roles}
+                />
+            )}
+
+            {canEdit && editUser && (
+                <EditUserModal
+                    open={!!editUser}
+                    onOpenChange={(open) => !open && setEditUser(null)}
+                    user={editUser}
+                    roles={roles}
+                />
+            )}
+
+            {canDelete && deleteUser && (
+                <DeleteUserDialog
+                    open={!!deleteUser}
+                    onOpenChange={(open) => !open && setDeleteUser(null)}
+                    user={deleteUser}
+                />
+            )}
+        </AppLayout>
     );
 }

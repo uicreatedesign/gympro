@@ -2,6 +2,7 @@ import { Member } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
     members: Member[];
@@ -45,13 +46,13 @@ export default function MemberTable({ members, onEdit, onDelete }: Props) {
                         {(onEdit || onDelete) && (
                             <TableCell className="text-right space-x-2">
                                 {onEdit && (
-                                    <Button variant="outline" size="sm" onClick={() => onEdit(member)}>
-                                        Edit
+                                    <Button variant="ghost" size="icon" onClick={() => onEdit(member)}>
+                                        <Pencil className="h-4 w-4" />
                                     </Button>
                                 )}
                                 {onDelete && (
-                                    <Button variant="destructive" size="sm" onClick={() => onDelete(member)}>
-                                        Delete
+                                    <Button variant="ghost" size="icon" onClick={() => onDelete(member)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
                                 )}
                             </TableCell>

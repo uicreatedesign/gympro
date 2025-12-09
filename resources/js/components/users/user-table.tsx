@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
     users: User[];
@@ -52,13 +53,13 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                         {(onEdit || onDelete) && (
                             <TableCell className="text-right space-x-2">
                                 {onEdit && (
-                                    <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
-                                        Edit
+                                    <Button variant="ghost" size="icon" onClick={() => onEdit(user)}>
+                                        <Pencil className="h-4 w-4" />
                                     </Button>
                                 )}
                                 {onDelete && (
-                                    <Button variant="destructive" size="sm" onClick={() => onDelete(user)}>
-                                        Delete
+                                    <Button variant="ghost" size="icon" onClick={() => onDelete(user)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
                                 )}
                             </TableCell>

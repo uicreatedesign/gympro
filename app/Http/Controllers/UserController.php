@@ -17,9 +17,14 @@ class UserController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        return Inertia::render('Users/Index', [
+        return Inertia::render('users/Index', [
             'users' => User::with('roles')->latest()->get(),
             'roles' => Role::all(),
+            'stats' => [
+                'total' => User::count(),
+                'active' => User::where('status', 'active')->count(),
+                'inactive' => User::where('status', 'inactive')->count(),
+            ],
         ]);
     }
 
