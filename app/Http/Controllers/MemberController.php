@@ -15,7 +15,7 @@ class MemberController extends Controller
         }
 
         return Inertia::render('Members/Index', [
-            'members' => Member::latest()->get(),
+            'members' => Member::with('user')->latest()->get(),
         ]);
     }
 
@@ -35,9 +35,28 @@ class MemberController extends Controller
             'join_date' => 'required|date',
             'status' => 'required|in:active,inactive,expired',
             'notes' => 'nullable|string',
+            'create_login' => 'nullable|boolean',
+            'password' => 'required_if:create_login,true|nullable|string|min:8',
         ]);
 
-        Member::create($validated);
+        $member = Member::create($validated);
+
+        // Create user account if requested
+        if ($request->create_login && $request->password) {
+            $user = \App\Models\User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => \Hash::make($request->password),
+                'status' => 'active',
+            ]);
+
+            $memberRole = \App\Models\Role::where('name', 'Member')->first();
+            if ($memberRole) {
+                $user->roles()->attach($memberRole->id);
+            }
+
+            $member->update(['user_id' => $user->id]);
+        }
 
         return redirect()->back()->with('success', 'Member created successfully');
     }

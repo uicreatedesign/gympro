@@ -3,8 +3,10 @@
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TrainerController;
@@ -21,6 +23,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('member/dashboard', [MemberDashboardController::class, 'index'])->name('member.dashboard');
 
     Route::resource('members', MemberController::class)->except(['show', 'create', 'edit']);
     Route::resource('plans', PlanController::class)->except(['show', 'create', 'edit']);
@@ -30,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('trainers', TrainerController::class)->except(['show', 'create', 'edit']);
     Route::resource('payments', PaymentController::class)->except(['show', 'create', 'edit']);
     Route::get('payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     
     Route::middleware('can:view_roles')->group(function () {
         Route::get('roles', [RoleController::class, 'index'])->name('roles.index');

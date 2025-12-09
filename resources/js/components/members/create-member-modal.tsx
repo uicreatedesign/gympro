@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Props {
     open: boolean;
@@ -24,6 +25,8 @@ export default function CreateMemberModal({ open, onOpenChange }: Props) {
         join_date: new Date().toISOString().split('T')[0],
         status: 'active' as 'active' | 'inactive' | 'expired',
         notes: '',
+        create_login: false,
+        password: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -147,6 +150,33 @@ export default function CreateMemberModal({ open, onOpenChange }: Props) {
                                 onChange={(e) => setData('notes', e.target.value)}
                             />
                         </div>
+
+                        <div className="space-y-2 col-span-2">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="create_login"
+                                    checked={data.create_login}
+                                    onCheckedChange={(checked) => setData('create_login', checked as boolean)}
+                                />
+                                <Label htmlFor="create_login" className="cursor-pointer">
+                                    Create login account for this member
+                                </Label>
+                            </div>
+                        </div>
+
+                        {data.create_login && (
+                            <div className="space-y-2 col-span-2">
+                                <Label htmlFor="password">Password *</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    placeholder="Enter password for member login"
+                                />
+                                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                            </div>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
