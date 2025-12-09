@@ -120,3 +120,17 @@ export interface Attendance {
     created_at: string;
     updated_at: string;
 }
+
+export interface Trainer {
+    id: number;
+    user_id: number;
+    specialization: string;
+    experience_years: number;
+    salary: string;
+    joining_date: string;
+    bio: string | null;
+    status: 'active' | 'inactive';
+    user?: User;
+    created_at: string;
+    updated_at: string;
+}

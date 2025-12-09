@@ -6,6 +6,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
     Route::resource('attendances', AttendanceController::class)->except(['show', 'create', 'edit']);
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
+    Route::resource('trainers', TrainerController::class)->except(['show', 'create', 'edit']);
     
     Route::middleware('can:view_roles')->group(function () {
         Route::get('roles', [RoleController::class, 'index'])->name('roles.index');

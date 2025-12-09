@@ -36,6 +36,10 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'create_attendances', 'description' => 'Create new attendances'],
             ['name' => 'edit_attendances', 'description' => 'Edit existing attendances'],
             ['name' => 'delete_attendances', 'description' => 'Delete attendances'],
+            ['name' => 'view_trainers', 'description' => 'View trainers list'],
+            ['name' => 'create_trainers', 'description' => 'Create new trainers'],
+            ['name' => 'edit_trainers', 'description' => 'Edit existing trainers'],
+            ['name' => 'delete_trainers', 'description' => 'Delete trainers'],
         ];
 
         foreach ($permissions as $permission) {
@@ -56,7 +60,7 @@ class RolePermissionSeeder extends Seeder
             ['description' => 'Limited management access']
         );
         $manager->permissions()->sync(
-            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'create_members', 'edit_members', 'view_plans', 'create_plans', 'edit_plans', 'view_subscriptions', 'create_subscriptions', 'edit_subscriptions', 'view_attendances', 'create_attendances', 'edit_attendances'])->pluck('id')
+            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'create_members', 'edit_members', 'view_plans', 'create_plans', 'edit_plans', 'view_subscriptions', 'create_subscriptions', 'edit_subscriptions', 'view_attendances', 'create_attendances', 'edit_attendances', 'view_trainers', 'create_trainers', 'edit_trainers'])->pluck('id')
         );
 
         $viewer = Role::firstOrCreate(
@@ -64,7 +68,12 @@ class RolePermissionSeeder extends Seeder
             ['description' => 'Read-only access']
         );
         $viewer->permissions()->sync(
-            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'view_plans', 'view_subscriptions', 'view_attendances'])->pluck('id')
+            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'view_plans', 'view_subscriptions', 'view_attendances', 'view_trainers'])->pluck('id')
+        );
+
+        Role::firstOrCreate(
+            ['name' => 'Trainer'],
+            ['description' => 'Gym trainer access']
         );
     }
 }
