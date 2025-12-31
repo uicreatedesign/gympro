@@ -48,6 +48,11 @@ class Subscription extends Model
     public function getPaymentStatusAttribute()
     {
         $totalPaid = $this->total_paid;
+        
+        if (!$this->relationLoaded('plan')) {
+            $this->load('plan');
+        }
+        
         $planPrice = $this->plan->price ?? 0;
         $admissionFee = $this->plan->admission_fee ?? 0;
         $totalRequired = $planPrice + $admissionFee;
@@ -61,8 +66,20 @@ class Subscription extends Model
     // Auto-activate subscription when fully paid
     public function checkAndActivate()
     {
+        // Refresh to get latest payment data
+        $this->refresh();
+        $this->load('plan', 'payments');
+        
+        \Log::info('Checking subscription activation', [
+            'subscription_id' => $this->id,
+            'status' => $this->status,
+            'payment_status' => $this->payment_status,
+            'total_paid' => $this->total_paid
+        ]);
+        
         if ($this->payment_status === 'paid' && $this->status === 'pending') {
             $this->update(['status' => 'active']);
+            \Log::info('Subscription activated', ['subscription_id' => $this->id]);
         }
     }
 }

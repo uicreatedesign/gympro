@@ -82,6 +82,14 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                                             {new Date(currentSubscription.end_date).toLocaleDateString()}
                                         </p>
                                     </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Status</p>
+                                        <p className="text-lg font-semibold capitalize">{currentSubscription.status}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Payment Status</p>
+                                        <p className="text-lg font-semibold capitalize">{currentSubscription.payment_status}</p>
+                                    </div>
                                 </div>
                                 {(subscriptionStatus === 'expiring' || subscriptionStatus === 'expired') && (
                                     <Button className="w-full">Renew Membership</Button>
@@ -147,16 +155,19 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                     <CardContent>
                         {recentPayments.length > 0 ? (
                             <div className="space-y-3">
-                                {recentPayments.map((payment) => (
+                                {recentPayments.map((payment: any) => (
                                     <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
                                         <div className="flex-1">
                                             <p className="font-medium">{payment.invoice_number}</p>
                                             <p className="text-sm text-muted-foreground">
-                                                {new Date(payment.payment_date).toLocaleDateString()} • {payment.payment_method.toUpperCase()}
+                                                {payment.subscription?.plan?.name || 'N/A'} • {new Date(payment.payment_date).toLocaleDateString()} • {payment.payment_method.toUpperCase()}
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <p className="font-semibold">₹{payment.amount}</p>
+                                            <div className="text-right">
+                                                <p className="font-semibold">₹{payment.amount}</p>
+                                                <p className="text-xs text-muted-foreground capitalize">{payment.payment_type}</p>
+                                            </div>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

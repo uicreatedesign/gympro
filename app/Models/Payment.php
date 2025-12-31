@@ -36,6 +36,7 @@ class Payment extends Model
 
         static::created(function ($payment) {
             if ($payment->status === 'completed') {
+                \Log::info('Payment created, triggering activation', ['payment_id' => $payment->id, 'subscription_id' => $payment->subscription_id]);
                 $payment->subscription->checkAndActivate();
             }
         });
@@ -54,7 +55,14 @@ class Payment extends Model
 
     public function member()
     {
-        return $this->hasOneThrough(Member::class, Subscription::class, 'id', 'id', 'subscription_id', 'member_id');
+        return $this->hasOneThrough(
+            Member::class,
+            Subscription::class,
+            'id',
+            'id',
+            'subscription_id',
+            'member_id'
+        );
     }
 
     public function scopeCompleted($query)

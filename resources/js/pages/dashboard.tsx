@@ -93,7 +93,7 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions }
                                                 <p className="text-sm text-muted-foreground">{subscription.plan?.name}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-medium">₹{subscription.amount_paid}</p>
+                                                <p className="text-sm font-medium">₹{subscription.total_paid || 0}</p>
                                                 <Badge variant="outline" className="mt-1 border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950">{subscription.status}</Badge>
                                             </div>
                                         </div>

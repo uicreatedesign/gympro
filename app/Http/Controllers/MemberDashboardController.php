@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Member;
 use App\Models\Subscription;
 use App\Models\Attendance;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -13,17 +14,22 @@ class MemberDashboardController extends Controller
 {
     public function index()
     {
+        // Check if user has member role
+        if (!auth()->user()->hasPermission('view_member_dashboard')) {
+            abort(403, 'Unauthorized. Member access only.');
+        }
+
         $user = auth()->user();
         $member = Member::where('user_id', $user->id)->first();
 
         if (!$member) {
-            abort(404, 'Member profile not found');
+            abort(404, 'Member profile not found. Please contact admin.');
         }
 
         // Current Subscription with payments
         $currentSubscription = Subscription::with(['plan', 'payments'])
             ->where('member_id', $member->id)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'pending'])
             ->latest()
             ->first();
 
@@ -37,14 +43,15 @@ class MemberDashboardController extends Controller
             ->latest('date')
             ->first();
 
-        // Recent Payments via subscriptions
-        $recentPayments = [];
-        if ($currentSubscription) {
-            $recentPayments = $currentSubscription->payments()
-                ->latest('payment_date')
-                ->limit(5)
-                ->get();
-        }
+        // Recent Payments - all subscriptions
+        $allSubscriptions = Subscription::where('member_id', $member->id)
+            ->pluck('id');
+        
+        $recentPayments = Payment::whereIn('subscription_id', $allSubscriptions)
+            ->with('subscription.plan')
+            ->latest('payment_date')
+            ->limit(5)
+            ->get();
 
         // Calculate days remaining
         $daysRemaining = null;
@@ -52,7 +59,7 @@ class MemberDashboardController extends Controller
         if ($currentSubscription) {
             $endDate = Carbon::parse($currentSubscription->end_date);
             $now = Carbon::now();
-            $daysRemaining = $now->diffInDays($endDate, false);
+            $daysRemaining = (int) $now->diffInDays($endDate, false);
             
             if ($daysRemaining < 0) {
                 $subscriptionStatus = 'expired';
@@ -77,11 +84,16 @@ class MemberDashboardController extends Controller
 
     public function attendance(Request $request)
     {
+        // Check if user has member role
+        if (!auth()->user()->hasPermission('view_member_dashboard')) {
+            abort(403, 'Unauthorized. Member access only.');
+        }
+
         $user = auth()->user();
         $member = Member::where('user_id', $user->id)->first();
 
         if (!$member) {
-            abort(404, 'Member profile not found');
+            abort(404, 'Member profile not found. Please contact admin.');
         }
 
         $year = $request->input('year', Carbon::now()->year);

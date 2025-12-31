@@ -42,6 +42,14 @@ class AttendanceController extends Controller
             'member_id' => 'required|exists:members,id',
         ]);
 
+        // Check if user is member and can only check-in themselves
+        if (auth()->user()->hasPermission('view_member_dashboard')) {
+            $member = Member::where('user_id', auth()->id())->first();
+            if (!$member || $member->id != $validated['member_id']) {
+                return response()->json(['message' => 'Unauthorized. You can only check-in yourself.', 'type' => 'error'], 403);
+            }
+        }
+
         $today = Carbon::today();
         $existing = Attendance::where('member_id', $validated['member_id'])
             ->whereDate('date', $today)

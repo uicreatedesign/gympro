@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,17 +100,9 @@ export default function Plans({ plans, activeSubscription, member }: Props) {
                     )}
                 </CardContent>
                 <CardFooter>
-                    {isActive ? (
-                        <Button className="w-full" disabled>
-                            Current Plan
-                        </Button>
-                    ) : (
-                        <Link href={`/member/checkout/${plan.id}`} className="w-full">
-                            <Button className="w-full">
-                                Buy Now
-                            </Button>
-                        </Link>
-                    )}
+                    <Button className="w-full" disabled>
+                        {isActive ? 'Current Plan' : 'Contact Admin to Purchase'}
+                    </Button>
                 </CardFooter>
             </Card>
         );
@@ -120,7 +112,7 @@ export default function Plans({ plans, activeSubscription, member }: Props) {
         <AppSidebarLayout>
             <Head title="Buy Plans" />
 
-            <div className="space-y-6">
+            <div className="container mx-auto p-6 space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold">Membership Plans</h1>
                     <p className="text-muted-foreground">Choose the perfect plan for your fitness journey</p>
