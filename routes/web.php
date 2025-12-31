@@ -9,6 +9,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\UserController;
@@ -65,6 +66,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('can:create_roles')->post('roles', [RoleController::class, 'store'])->name('roles.store');
     Route::middleware('can:edit_roles')->put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
     Route::middleware('can:delete_roles')->delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+
+    Route::middleware('can:view_settings')->get('settings/general', [SettingController::class, 'index'])->name('settings.general');
+    Route::middleware('can:edit_settings')->post('settings/general', [SettingController::class, 'update'])->name('settings.update');
 });
 
 require __DIR__.'/settings.php';

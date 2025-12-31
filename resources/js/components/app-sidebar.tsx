@@ -14,7 +14,7 @@ import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3 } from 'lucide-react';
+import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems = [
@@ -71,6 +71,12 @@ const mainNavItems = [
         href: '/users',
         icon: UserCog,
         permission: 'view_users',
+    },
+    {
+        title: 'Roles & Permissions',
+        href: '/roles',
+        icon: Shield,
+        permission: 'view_roles',
     },
 ];
 
