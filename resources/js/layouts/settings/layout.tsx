@@ -18,6 +18,12 @@ const sidebarNavItems: NavItem[] = [
         permission: 'view_settings',
     },
     {
+        title: 'Payment Gateways',
+        href: '/settings/payment-gateways',
+        icon: null,
+        permission: 'view_settings',
+    },
+    {
         title: 'Profile',
         href: edit(),
         icon: null,

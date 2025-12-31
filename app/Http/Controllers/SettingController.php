@@ -16,7 +16,8 @@ class SettingController extends Controller
     }
 
     public function update(Request $request)
-    {        $validated = $request->validate([
+    {
+        $validated = $request->validate([
             'app_name' => 'required|string|max:255',
             'app_logo' => 'nullable|image|max:2048',
             'currency' => 'required|string|max:10',
@@ -45,5 +46,33 @@ class SettingController extends Controller
         Setting::clearCache();
 
         return redirect()->back()->with('success', 'Settings updated successfully');
+    }
+
+    public function paymentGateways()
+    {
+        return Inertia::render('settings/payment-gateways', [
+            'settings' => Setting::getAllSettings(),
+        ]);
+    }
+
+    public function updatePaymentGateways(Request $request)
+    {
+        $validated = $request->validate([
+            'phonepe_enabled' => 'required|boolean',
+            'phonepe_merchant_id' => 'nullable|string|max:255',
+            'phonepe_salt_key' => 'nullable|string|max:255',
+            'phonepe_salt_index' => 'nullable|string|max:10',
+            'phonepe_env' => 'nullable|in:UAT,PRODUCTION',
+        ]);
+
+        Setting::set('phonepe_enabled', $validated['phonepe_enabled'] ? '1' : '0');
+        Setting::set('phonepe_merchant_id', $validated['phonepe_merchant_id'] ?? '');
+        Setting::set('phonepe_salt_key', $validated['phonepe_salt_key'] ?? '');
+        Setting::set('phonepe_salt_index', $validated['phonepe_salt_index'] ?? '1');
+        Setting::set('phonepe_env', $validated['phonepe_env'] ?? 'UAT');
+
+        Setting::clearCache();
+
+        return redirect()->back()->with('success', 'Payment gateway settings updated successfully');
     }
 }

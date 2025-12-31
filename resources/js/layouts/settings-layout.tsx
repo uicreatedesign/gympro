@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Settings, Shield } from 'lucide-react';
+import { Settings, Shield, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppLayout from './app-layout';
 
@@ -16,6 +16,12 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             href: '/settings/general',
             label: 'General Settings',
             icon: Settings,
+            permission: 'view_settings',
+        },
+        {
+            href: '/settings/payment-gateways',
+            label: 'Payment Gateways',
+            icon: CreditCard,
             permission: 'view_settings',
         },
         {

@@ -55,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('can:view_settings')->get('settings/general', [SettingController::class, 'index'])->name('settings.general');
     Route::middleware('can:edit_settings')->post('settings/general', [SettingController::class, 'update'])->name('settings.update');
+    Route::middleware('can:view_settings')->get('settings/payment-gateways', [SettingController::class, 'paymentGateways'])->name('settings.payment-gateways');
+    Route::middleware('can:edit_settings')->post('settings/payment-gateways', [SettingController::class, 'updatePaymentGateways'])->name('settings.payment-gateways.update');
 });
 
 require __DIR__.'/settings.php';
