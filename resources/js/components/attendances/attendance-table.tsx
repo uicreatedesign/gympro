@@ -37,7 +37,14 @@ export default function AttendanceTable({ attendances, onCheckOut, onEdit, onDel
                             <TableCell>{attendance.check_in_time}</TableCell>
                             <TableCell>{attendance.check_out_time || '-'}</TableCell>
                             <TableCell>
-                                <Badge variant="outline">
+                                <Badge 
+                                    variant="outline"
+                                    className={
+                                        attendance.check_out_time
+                                            ? 'border-gray-200 text-gray-700 bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-950'
+                                            : 'border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950'
+                                    }
+                                >
                                     {attendance.check_out_time ? 'Checked Out' : 'In Gym'}
                                 </Badge>
                             </TableCell>

@@ -35,7 +35,16 @@ export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
                         <TableCell>₹{trainer.salary}</TableCell>
                         <TableCell>{new Date(trainer.joining_date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                            <Badge variant="outline">{trainer.status}</Badge>
+                            <Badge 
+                                variant="outline"
+                                className={
+                                    trainer.status === 'active'
+                                        ? 'border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950'
+                                        : 'border-gray-200 text-gray-700 bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-950'
+                                }
+                            >
+                                {trainer.status}
+                            </Badge>
                         </TableCell>
                         {(onEdit || onDelete) && (
                             <TableCell className="text-right">

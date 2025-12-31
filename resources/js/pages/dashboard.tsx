@@ -28,25 +28,25 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions }
                         title="Total Members"
                         value={stats.total_members}
                         icon={Users}
-                        iconColor="bg-blue-500"
+                        description="All registered members"
                     />
                     <StatsCard
                         title="Active Members"
                         value={stats.active_members}
                         icon={Users}
-                        iconColor="bg-green-500"
+                        description="Currently active members"
                     />
                     <StatsCard
                         title="Active Subscriptions"
                         value={stats.active_subscriptions}
                         icon={Calendar}
-                        iconColor="bg-purple-500"
+                        description="Valid subscriptions"
                     />
                     <StatsCard
                         title="Revenue This Month"
                         value={`₹${stats.revenue_this_month.toLocaleString()}`}
                         icon={TrendingUp}
-                        iconColor="bg-orange-500"
+                        description="Total monthly revenue"
                     />
                 </div>
 

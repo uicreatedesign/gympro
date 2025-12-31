@@ -21,6 +21,7 @@ export default function MemberTable({ members, onEdit, onDelete }: Props) {
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-16">Sr No</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
@@ -31,15 +32,27 @@ export default function MemberTable({ members, onEdit, onDelete }: Props) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {members.map((member) => (
+                {members.map((member, index) => (
                     <TableRow key={member.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">{member.name}</TableCell>
                         <TableCell>{member.email}</TableCell>
                         <TableCell>{member.phone}</TableCell>
                         <TableCell className="capitalize">{member.gender}</TableCell>
                         <TableCell>{new Date(member.join_date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                            <Badge variant="outline">{member.status}</Badge>
+                            <Badge 
+                                variant="outline"
+                                className={
+                                    member.status === 'active'
+                                        ? 'border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950'
+                                        : member.status === 'expired'
+                                        ? 'border-red-200 text-red-700 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950'
+                                        : 'border-gray-200 text-gray-700 bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-950'
+                                }
+                            >
+                                {member.status}
+                            </Badge>
                         </TableCell>
                         {(onEdit || onDelete) && (
                             <TableCell className="text-right">
