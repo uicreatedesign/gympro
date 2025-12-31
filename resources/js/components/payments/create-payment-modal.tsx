@@ -13,10 +13,9 @@ interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     members: Member[];
-    subscriptions: Subscription[];
 }
 
-export default function CreatePaymentModal({ open, onOpenChange, members, subscriptions }: Props) {
+export default function CreatePaymentModal({ open, onOpenChange, members }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         member_id: '',
         subscription_id: '',
@@ -76,11 +75,6 @@ export default function CreatePaymentModal({ open, onOpenChange, members, subscr
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="0">None</SelectItem>
-                                    {subscriptions.map((sub) => (
-                                        <SelectItem key={sub.id} value={sub.id.toString()}>
-                                            {sub.member?.name} - {sub.plan?.name}
-                                        </SelectItem>
-                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

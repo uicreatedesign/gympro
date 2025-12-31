@@ -32,46 +32,46 @@ export default function AttendanceTable({ attendances, onCheckOut, onEdit, onDel
                     </TableRow>
                 ) : (
                     attendances.map((attendance) => (
-                        <TableRow key={attendance.id}>
+                        <TableRow key={attendance.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                             <TableCell className="font-medium">{attendance.member?.name}</TableCell>
                             <TableCell>{attendance.check_in_time}</TableCell>
                             <TableCell>{attendance.check_out_time || '-'}</TableCell>
                             <TableCell>
-                                {attendance.check_out_time ? (
-                                    <Badge variant="secondary">Checked Out</Badge>
-                                ) : (
-                                    <Badge className="bg-green-500">In Gym</Badge>
-                                )}
+                                <Badge variant="outline">
+                                    {attendance.check_out_time ? 'Checked Out' : 'In Gym'}
+                                </Badge>
                             </TableCell>
                             {(onCheckOut || onEdit || onDelete) && (
-                                <TableCell className="text-right space-x-2">
-                                    {onCheckOut && !attendance.check_out_time && (
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            onClick={() => onCheckOut(attendance)}
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                        </Button>
-                                    )}
-                                    {onEdit && (
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            onClick={() => onEdit(attendance)}
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                    )}
-                                    {onDelete && (
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            onClick={() => onDelete(attendance)}
-                                        >
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    )}
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                        {onCheckOut && !attendance.check_out_time && (
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => onCheckOut(attendance)}
+                                            >
+                                                <LogOut className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        {onEdit && (
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => onEdit(attendance)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        {onDelete && (
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => onDelete(attendance)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
                                 </TableCell>
                             )}
                         </TableRow>

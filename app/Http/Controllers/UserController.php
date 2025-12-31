@@ -18,8 +18,8 @@ class UserController extends Controller
         }
 
         return Inertia::render('users/Index', [
-            'users' => User::with('roles')->latest()->get(),
-            'roles' => Role::all(),
+            'users' => User::with('roles')->latest()->paginate(50),
+            'roles' => fn() => Role::all(),
             'stats' => [
                 'total' => User::count(),
                 'active' => User::where('status', 'active')->count(),

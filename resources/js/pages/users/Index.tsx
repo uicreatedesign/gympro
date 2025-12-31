@@ -11,7 +11,7 @@ import EditUserModal from '@/components/users/edit-user-modal';
 import DeleteUserDialog from '@/components/users/delete-user-dialog';
 
 interface Props extends PageProps {
-    users: User[];
+    users: User[] | { data: User[] };
     roles: Role[];
     stats: {
         total: number;
@@ -29,6 +29,8 @@ export default function Index({ users, roles, stats }: Props) {
     const canCreate = auth.permissions.includes('create_users');
     const canEdit = auth.permissions.includes('edit_users');
     const canDelete = auth.permissions.includes('delete_users');
+
+    const userData = Array.isArray(users) ? users : users.data;
 
     return (
         <AppLayout>
@@ -75,7 +77,7 @@ export default function Index({ users, roles, stats }: Props) {
                 </div>
 
                 <UserTable 
-                    users={users} 
+                    users={userData} 
                     roles={roles}
                     onEdit={canEdit ? setEditUser : undefined}
                     onDelete={canDelete ? setDeleteUser : undefined}

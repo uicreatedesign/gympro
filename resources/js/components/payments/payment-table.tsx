@@ -8,30 +8,13 @@ interface Props {
     payments: Payment[];
     onEdit?: (payment: Payment) => void;
     onDelete?: (payment: Payment) => void;
-    onDownloadInvoice?: (payment: Payment) => void;
 }
 
-const statusColors = {
-    completed: 'bg-green-500',
-    pending: 'bg-yellow-500',
-    failed: 'bg-red-500',
-    refunded: 'bg-gray-500',
-};
+export default function PaymentTable({ payments, onEdit, onDelete }: Props) {
+    const handleDownload = (payment: Payment) => {
+        window.open(`/payments/${payment.id}/invoice`, '_blank');
+    };
 
-const methodLabels = {
-    cash: 'Cash',
-    card: 'Card',
-    upi: 'UPI',
-    bank_transfer: 'Bank Transfer',
-};
-
-const typeLabels = {
-    subscription: 'Subscription',
-    admission: 'Admission',
-    other: 'Other',
-};
-
-export default function PaymentTable({ payments, onEdit, onDelete, onDownloadInvoice }: Props) {
     return (
         <Table>
             <TableHeader>
@@ -40,49 +23,52 @@ export default function PaymentTable({ payments, onEdit, onDelete, onDownloadInv
                     <TableHead>Member</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Method</TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
-                    {(onEdit || onDelete || onDownloadInvoice) && <TableHead className="text-right">Actions</TableHead>}
+                    <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {payments.map((payment) => (
-                    <TableRow key={payment.id}>
+                    <TableRow key={payment.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell className="font-medium">{payment.invoice_number}</TableCell>
                         <TableCell>{payment.member?.name}</TableCell>
                         <TableCell>₹{payment.amount}</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">{methodLabels[payment.payment_method]}</Badge>
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant="secondary">{typeLabels[payment.payment_type]}</Badge>
-                        </TableCell>
+                        <TableCell>{payment.payment_method}</TableCell>
                         <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                            <Badge className={statusColors[payment.status]}>
+                            <Badge 
+                                variant="outline"
+                                className={
+                                    payment.status === 'completed'
+                                        ? 'border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950'
+                                        : payment.status === 'pending'
+                                        ? 'border-yellow-200 text-yellow-700 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:bg-yellow-950'
+                                        : payment.status === 'failed'
+                                        ? 'border-red-200 text-red-700 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950'
+                                        : 'border-gray-200 text-gray-700 bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-950'
+                                }
+                            >
                                 {payment.status}
                             </Badge>
                         </TableCell>
-                        {(onEdit || onDelete || onDownloadInvoice) && (
-                            <TableCell className="text-right space-x-2">
-                                {onDownloadInvoice && (
-                                    <Button variant="ghost" size="icon" onClick={() => onDownloadInvoice(payment)}>
-                                        <Download className="h-4 w-4" />
-                                    </Button>
-                                )}
+                        <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="sm" onClick={() => handleDownload(payment)}>
+                                    <Download className="h-4 w-4" />
+                                </Button>
                                 {onEdit && (
-                                    <Button variant="ghost" size="icon" onClick={() => onEdit(payment)}>
+                                    <Button variant="outline" size="sm" onClick={() => onEdit(payment)}>
                                         <Pencil className="h-4 w-4" />
                                     </Button>
                                 )}
                                 {onDelete && (
-                                    <Button variant="ghost" size="icon" onClick={() => onDelete(payment)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    <Button variant="outline" size="sm" onClick={() => onDelete(payment)}>
+                                        <Trash2 className="h-4 w-4" />
                                     </Button>
                                 )}
-                            </TableCell>
-                        )}
+                            </div>
+                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>

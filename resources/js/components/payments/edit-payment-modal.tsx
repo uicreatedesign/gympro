@@ -13,11 +13,9 @@ interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     payment: Payment;
-    members: Member[];
-    subscriptions: Subscription[];
 }
 
-export default function EditPaymentModal({ open, onOpenChange, payment, members, subscriptions }: Props) {
+export default function EditPaymentModal({ open, onOpenChange, payment }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         member_id: payment.member_id.toString(),
         subscription_id: payment.subscription_id?.toString() || '',
@@ -73,11 +71,7 @@ export default function EditPaymentModal({ open, onOpenChange, payment, members,
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {members.map((member) => (
-                                        <SelectItem key={member.id} value={member.id.toString()}>
-                                            {member.name}
-                                        </SelectItem>
-                                    ))}
+                                    <SelectItem value={data.member_id}>{payment.member?.name}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -89,11 +83,6 @@ export default function EditPaymentModal({ open, onOpenChange, payment, members,
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="0">None</SelectItem>
-                                    {subscriptions.map((sub) => (
-                                        <SelectItem key={sub.id} value={sub.id.toString()}>
-                                            {sub.member?.name} - {sub.plan?.name}
-                                        </SelectItem>
-                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

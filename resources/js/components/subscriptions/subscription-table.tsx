@@ -39,34 +39,54 @@ export default function SubscriptionTable({ subscriptions, onEdit, onDelete }: P
             </TableHeader>
             <TableBody>
                 {subscriptions.map((subscription) => (
-                    <TableRow key={subscription.id}>
+                    <TableRow key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell className="font-medium">{subscription.member?.name}</TableCell>
                         <TableCell>{subscription.plan?.name}</TableCell>
                         <TableCell>{new Date(subscription.start_date).toLocaleDateString()}</TableCell>
                         <TableCell>{new Date(subscription.end_date).toLocaleDateString()}</TableCell>
                         <TableCell>₹{subscription.amount_paid}</TableCell>
                         <TableCell>
-                            <Badge className={paymentColors[subscription.payment_status]}>
+                            <Badge 
+                                variant="outline" 
+                                className={
+                                    subscription.payment_status === 'paid' 
+                                        ? 'border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950'
+                                        : subscription.payment_status === 'pending'
+                                        ? 'border-yellow-200 text-yellow-700 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:bg-yellow-950'
+                                        : 'border-red-200 text-red-700 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950'
+                                }
+                            >
                                 {subscription.payment_status}
                             </Badge>
                         </TableCell>
                         <TableCell>
-                            <Badge className={statusColors[subscription.status]}>
+                            <Badge 
+                                variant="outline"
+                                className={
+                                    subscription.status === 'active'
+                                        ? 'border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950'
+                                        : subscription.status === 'expired'
+                                        ? 'border-red-200 text-red-700 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950'
+                                        : 'border-gray-200 text-gray-700 bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-950'
+                                }
+                            >
                                 {subscription.status}
                             </Badge>
                         </TableCell>
                         {(onEdit || onDelete) && (
-                            <TableCell className="text-right space-x-2">
-                                {onEdit && (
-                                    <Button variant="ghost" size="icon" onClick={() => onEdit(subscription)}>
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
-                                )}
-                                {onDelete && (
-                                    <Button variant="ghost" size="icon" onClick={() => onDelete(subscription)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                )}
+                            <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                    {onEdit && (
+                                        <Button variant="outline" size="sm" onClick={() => onEdit(subscription)}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    {onDelete && (
+                                        <Button variant="outline" size="sm" onClick={() => onDelete(subscription)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
                             </TableCell>
                         )}
                     </TableRow>

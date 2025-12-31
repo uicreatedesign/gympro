@@ -11,7 +11,7 @@ import EditTrainerModal from '@/components/trainers/edit-trainer-modal';
 import DeleteTrainerDialog from '@/components/trainers/delete-trainer-dialog';
 
 interface Props extends PageProps {
-    trainers: Trainer[];
+    trainers: Trainer[] | { data: Trainer[] };
     stats: {
         total: number;
         active: number;
@@ -28,6 +28,8 @@ export default function Index({ trainers, stats }: Props) {
     const canCreate = auth.permissions.includes('create_trainers');
     const canEdit = auth.permissions.includes('edit_trainers');
     const canDelete = auth.permissions.includes('delete_trainers');
+
+    const trainerData = Array.isArray(trainers) ? trainers : trainers.data;
 
     return (
         <AppLayout>
@@ -76,7 +78,7 @@ export default function Index({ trainers, stats }: Props) {
                 <Card>
                     <CardContent className="pt-6">
                         <TrainerTable 
-                            trainers={trainers}
+                            trainers={trainerData}
                             onEdit={canEdit ? setEditTrainer : undefined}
                             onDelete={canDelete ? setDeleteTrainer : undefined}
                         />

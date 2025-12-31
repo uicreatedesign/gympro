@@ -38,6 +38,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('plans', PlanController::class)->except(['show', 'create', 'edit']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
     Route::resource('attendances', AttendanceController::class)->except(['show', 'create', 'edit']);
+    Route::post('attendances/qr-checkin', [AttendanceController::class, 'qrCheckIn'])->name('attendances.qr-checkin')->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ]);
+    Route::get('attendances-reports', [AttendanceController::class, 'reports'])->name('attendances.reports');
+    Route::get('qr-checkin', fn() => Inertia::render('Attendances/QRCheckIn'))->name('qr-checkin');
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
     Route::resource('trainers', TrainerController::class)->except(['show', 'create', 'edit']);
     Route::resource('payments', PaymentController::class)->except(['show', 'create', 'edit']);

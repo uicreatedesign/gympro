@@ -27,7 +27,7 @@ export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
             </TableHeader>
             <TableBody>
                 {trainers.map((trainer) => (
-                    <TableRow key={trainer.id}>
+                    <TableRow key={trainer.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell className="font-medium">{trainer.user?.name}</TableCell>
                         <TableCell>{trainer.user?.email}</TableCell>
                         <TableCell>{trainer.specialization}</TableCell>
@@ -35,22 +35,22 @@ export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
                         <TableCell>₹{trainer.salary}</TableCell>
                         <TableCell>{new Date(trainer.joining_date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                            <Badge className={trainer.status === 'active' ? 'bg-green-500' : 'bg-gray-500'}>
-                                {trainer.status}
-                            </Badge>
+                            <Badge variant="outline">{trainer.status}</Badge>
                         </TableCell>
                         {(onEdit || onDelete) && (
-                            <TableCell className="text-right space-x-2">
-                                {onEdit && (
-                                    <Button variant="ghost" size="icon" onClick={() => onEdit(trainer)}>
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
-                                )}
-                                {onDelete && (
-                                    <Button variant="ghost" size="icon" onClick={() => onDelete(trainer)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                )}
+                            <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                    {onEdit && (
+                                        <Button variant="outline" size="sm" onClick={() => onEdit(trainer)}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    {onDelete && (
+                                        <Button variant="outline" size="sm" onClick={() => onDelete(trainer)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
                             </TableCell>
                         )}
                     </TableRow>

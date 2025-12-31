@@ -10,7 +10,7 @@ import EditPlanModal from '@/components/plans/edit-plan-modal';
 import DeletePlanDialog from '@/components/plans/delete-plan-dialog';
 
 interface Props {
-    plans: Plan[];
+    plans: Plan[] | { data: Plan[] };
 }
 
 export default function Index({ plans }: Props) {
@@ -22,6 +22,8 @@ export default function Index({ plans }: Props) {
     const canCreate = auth.permissions.includes('create_plans');
     const canEdit = auth.permissions.includes('edit_plans');
     const canDelete = auth.permissions.includes('delete_plans');
+
+    const planData = Array.isArray(plans) ? plans : plans.data;
 
     return (
         <AppLayout>
@@ -45,7 +47,7 @@ export default function Index({ plans }: Props) {
                     </CardHeader>
                     <CardContent>
                         <PlanTable 
-                            plans={plans} 
+                            plans={planData} 
                             onEdit={canEdit ? setEditPlan : undefined}
                             onDelete={canDelete ? setDeletePlan : undefined}
                         />

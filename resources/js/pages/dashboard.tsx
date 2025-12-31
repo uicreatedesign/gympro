@@ -23,11 +23,6 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions }
         <AppLayout>
             <Head title="Dashboard" />
             <div className="container mx-auto p-6 space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold">Dashboard</h1>
-                    <p className="text-muted-foreground">Welcome to GymPro Management</p>
-                </div>
-
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <StatsCard
                         title="Total Members"
@@ -72,7 +67,7 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions }
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-sm font-medium">{new Date(subscription.end_date).toLocaleDateString()}</p>
-                                                <Badge variant="destructive" className="mt-1">Expiring</Badge>
+                                                <Badge variant="outline" className="mt-1 border-red-200 text-red-700 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950">Expiring</Badge>
                                             </div>
                                         </div>
                                     ))}
@@ -99,7 +94,7 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions }
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-sm font-medium">₹{subscription.amount_paid}</p>
-                                                <Badge className="mt-1 bg-green-500">{subscription.status}</Badge>
+                                                <Badge variant="outline" className="mt-1 border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950">{subscription.status}</Badge>
                                             </div>
                                         </div>
                                     ))}

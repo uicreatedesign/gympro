@@ -16,7 +16,7 @@ class TrainerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $trainers = Trainer::with('user')->latest()->get();
+        $trainers = Trainer::with('user')->latest()->paginate(50);
 
         return Inertia::render('trainers/Index', [
             'trainers' => $trainers,

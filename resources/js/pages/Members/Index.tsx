@@ -10,7 +10,7 @@ import EditMemberModal from '@/components/members/edit-member-modal';
 import DeleteMemberDialog from '@/components/members/delete-member-dialog';
 
 interface Props {
-    members: Member[];
+    members: Member[] | { data: Member[] };
 }
 
 export default function Index({ members }: Props) {
@@ -22,6 +22,8 @@ export default function Index({ members }: Props) {
     const canCreate = auth.permissions.includes('create_members');
     const canEdit = auth.permissions.includes('edit_members');
     const canDelete = auth.permissions.includes('delete_members');
+
+    const memberData = Array.isArray(members) ? members : members.data;
 
     return (
         <AppLayout>
@@ -45,7 +47,7 @@ export default function Index({ members }: Props) {
                     </CardHeader>
                     <CardContent>
                         <MemberTable 
-                            members={members} 
+                            members={memberData} 
                             onEdit={canEdit ? setEditMember : undefined}
                             onDelete={canDelete ? setDeleteMember : undefined}
                         />

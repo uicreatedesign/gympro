@@ -2,86 +2,73 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PhonePeService;
+use App\Models\Payment;
+use App\Models\Member;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PaymentController extends Controller
 {
-    public function __construct(private PhonePeService $phonePeService) {}
-
-    public function initiatePayment(Request $request): JsonResponse
+    public function index()
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:1',
-            'order_id' => 'required|string',
+        $payments = Payment::with(['member', 'subscription.plan'])
+            ->latest()
+            ->paginate(50);
+
+        return Inertia::render('payments/Index', [
+            'payments' => $payments,
+            'members' => fn() => Member::all(),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'subscription_id' => 'nullable|exists:subscriptions,id',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,card,upi,bank_transfer',
+            'payment_type' => 'required|in:subscription,renewal,other',
+            'payment_date' => 'required|date',
+            'status' => 'required|in:pending,completed,failed',
+            'notes' => 'nullable|string',
         ]);
 
-        $orderId = $request->order_id;
-        $amount = (int) ($request->amount * 100); // Convert to paise
-        $redirectUrl = route('payment.callback');
+        Payment::create($validated);
 
-        $result = $this->phonePeService->initiatePayment($orderId, $amount, $redirectUrl);
-
-        return response()->json($result);
+        return redirect()->back()->with('success', 'Payment created successfully');
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function update(Request $request, Payment $payment)
     {
-        $orderId = $request->query('order_id');
-        
-        if ($orderId) {
-            $status = $this->phonePeService->checkOrderStatus($orderId);
-            
-            if ($status['success']) {
-                return redirect()->route('payment.success')->with('status', $status);
-            }
-        }
-
-        return redirect()->route('payment.failed');
-    }
-
-    public function webhook(Request $request): JsonResponse
-    {
-        $headers = [];
-        foreach ($_SERVER as $key => $value) {
-            if (strpos($key, 'HTTP_') === 0) {
-                $headerKey = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
-                $headers[$headerKey] = $value;
-            }
-        }
-
-        $requestBody = $request->getContent();
-        $result = $this->phonePeService->verifyCallback($headers, $requestBody);
-
-        return response()->json($result);
-    }
-
-    public function checkStatus(Request $request): JsonResponse
-    {
-        $request->validate(['order_id' => 'required|string']);
-        
-        $result = $this->phonePeService->checkOrderStatus($request->order_id);
-        return response()->json($result);
-    }
-
-    public function refund(Request $request): JsonResponse
-    {
-        $request->validate([
-            'refund_id' => 'required|string',
-            'original_order_id' => 'required|string',
-            'amount' => 'required|numeric|min:1',
+        $validated = $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'subscription_id' => 'nullable|exists:subscriptions,id',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,card,upi,bank_transfer',
+            'payment_type' => 'required|in:subscription,renewal,other',
+            'payment_date' => 'required|date',
+            'status' => 'required|in:pending,completed,failed',
+            'notes' => 'nullable|string',
         ]);
 
-        $amount = (int) ($request->amount * 100); // Convert to paise
-        
-        $result = $this->phonePeService->initiateRefund(
-            $request->refund_id,
-            $request->original_order_id,
-            $amount
-        );
+        $payment->update($validated);
 
-        return response()->json($result);
+        return redirect()->back()->with('success', 'Payment updated successfully');
+    }
+
+    public function destroy(Payment $payment)
+    {
+        $payment->delete();
+        return redirect()->back()->with('success', 'Payment deleted successfully');
+    }
+
+    public function invoice(Payment $payment)
+    {
+        $payment->load(['member', 'subscription.plan']);
+
+        $pdf = Pdf::loadView('invoices.payment', compact('payment'));
+        return $pdf->download('invoice-' . $payment->invoice_number . '.pdf');
     }
 }
