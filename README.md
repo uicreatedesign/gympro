@@ -1,108 +1,425 @@
 # Gympro - Gym Management System
 
-## About the Project
-
-Gympro is a web-based application designed to streamline the management of a gym or fitness center. It provides a comprehensive set of features to manage members, their subscriptions, attendance, and payments. The application is built with a modern technology stack, featuring a powerful backend powered by Laravel and a dynamic frontend built with React.
+A comprehensive web-based gym management system built with Laravel 12 and React 19, featuring role-based access control, member management, subscription tracking, attendance monitoring, payment processing, and more.
 
 ## Features
 
-*   **Member Management:** Easily add, view, and manage gym members.
-*   **Plan and Subscription Management:** Create and manage membership plans and subscriptions.
-*   **Attendance Tracking:** Track member attendance with a QR code check-in system.
-*   **Payment Processing:** Securely process payments using the PhonePe payment gateway.
-*   **Role-Based Access Control:** Manage user roles and permissions to control access to different parts of the application.
-*   **Reporting and Analytics:** Generate reports on attendance and payments to gain insights into your gym's performance.
-*   **Invoice Generation:** Automatically generate invoices for payments.
-*   **Modern User Interface:** A clean and responsive user interface built with React, TypeScript, and Tailwind CSS.
+### Core Modules
+
+#### 1. Member Management
+- Add, edit, and delete gym members
+- Track member details (name, email, phone, gender, DOB, address)
+- Member status tracking (active, inactive, expired)
+- Optional user account creation for member portal access
+- Pagination and search functionality
+- Serial number column for easy reference
+
+#### 2. Plan Management
+- Create and manage membership plans
+- Flexible plan configuration:
+  - Duration (in months)
+  - Pricing and admission fees
+  - Shift options (morning, evening, full day)
+  - Features (personal training, group classes, locker facility)
+- Plan status management (active/inactive)
+- Soft-colored badges for visual identification
+
+#### 3. Subscription Management
+- Link members to plans with subscriptions
+- Automatic end date calculation based on plan duration
+- Payment status tracking (pending, paid, overdue)
+- Subscription status (active, expired, cancelled)
+- Advanced search and filtering
+- Pagination with customizable rows per page
+- Admission fee tracking
+
+#### 4. Attendance Tracking
+- Manual attendance marking
+- QR code-based check-in system
+- Date-wise attendance filtering
+- Attendance reports and analytics
+- Status indicators (present, absent, late)
+- Dashboard cards with shadcn/ui styling
+
+#### 5. Payment Management
+- Payment recording and tracking
+- Multiple payment methods support
+- PhonePe payment gateway integration
+- Payment status tracking (pending, completed, failed, refunded)
+- Invoice generation (PDF)
+- Payment history and reports
+- Pagination and search
+
+#### 6. Trainer Management
+- Add and manage gym trainers
+- Trainer profiles with specialization
+- Contact information management
+- Status tracking (active/inactive)
+- Pagination support
+
+#### 7. User Management
+- Create and manage system users
+- Role assignment
+- User status management
+- Profile image support
+- Pagination with customizable rows per page
+
+#### 8. Roles & Permissions
+- Dynamic role-based access control (RBAC)
+- Granular permission management
+- Pre-defined roles: Admin, Manager, Trainer, Viewer, Member
+- Permission categories:
+  - Members (view, create, edit, delete)
+  - Plans (view, create, edit, delete)
+  - Subscriptions (view, create, edit, delete)
+  - Attendance (view, create, edit, delete)
+  - Trainers (view, create, edit, delete)
+  - Payments (view, create, edit, delete)
+  - Users (view, create, edit, delete)
+  - Roles (view, create, edit, delete)
+  - Settings (view, edit)
+  - Reports (view)
+- Scrollable permissions grid in edit modal
+
+#### 9. Dashboard
+- Overview statistics cards
+- Expiring subscriptions alerts
+- Recent subscriptions list
+- Attendance summary
+- Payment analytics
+- Soft-colored status badges
+
+#### 10. Reports
+- Attendance reports
+- Payment reports
+- Subscription analytics
+- Member statistics
+
+#### 11. General Settings
+- Application configuration:
+  - App name (displayed in sidebar logo)
+  - App logo upload
+  - Currency and symbol
+  - Tax rate configuration
+- Business information:
+  - Business name and address
+  - Contact details (phone, email, website)
+- System preferences:
+  - Timezone settings
+  - Date format configuration
+- Settings cached for performance (1-hour TTL)
+- Permission-based access control
+
+### Member Portal
+- Dedicated member dashboard
+- View active subscriptions
+- Browse available plans
+- Online plan purchase with PhonePe integration
+- Attendance history
+- Payment history
+- QR code for check-in
+
+### Authentication & Security
+- Laravel Fortify authentication
+- Two-factor authentication (2FA)
+- Email verification
+- Password reset functionality
+- Session management
+- XSS protection with input sanitization
+- CSRF protection
+
+### UI/UX Features
+- Modern, responsive design
+- Dark mode support
+- shadcn/ui components
+- Soft-colored badge system:
+  - Green: active, completed, paid
+  - Yellow: pending
+  - Red: expired, failed, overdue
+  - Gray: inactive, cancelled
+  - Blue: morning shift, admin role
+  - Purple: evening shift, trainer role
+  - Orange: full day shift
+- Hover effects on table rows
+- Serial number columns on all tables
+- Smart pagination with ellipsis
+- "Showing X to Y of Z results" display
+- Customizable rows per page selector
+- Toast notifications (Sonner)
+- Loading states
+- Form validation with error messages
 
 ## Technologies Used
 
-*   **Backend:** Laravel 12, PHP 8.2
-*   **Frontend:** React 19, TypeScript, Vite, Inertia.js
-*   **Database:** MySQL (or any other Laravel-supported database)
-*   **UI Libraries:** shadcn/ui, Radix UI, Tailwind CSS
-*   **Authentication:** Laravel Fortify
-*   **Payment Gateway:** PhonePe
+### Backend
+- **Framework**: Laravel 12
+- **PHP Version**: 8.2+
+- **Database**: MySQL (or any Laravel-supported database)
+- **Authentication**: Laravel Fortify
+- **PDF Generation**: DomPDF (for invoices)
+- **Payment Gateway**: PhonePe SDK v2
+- **QR Code**: Bacon QR Code
+
+### Frontend
+- **Framework**: React 19
+- **Language**: TypeScript
+- **Build Tool**: Vite 7
+- **SSR**: Inertia.js 2
+- **UI Components**: shadcn/ui, Radix UI
+- **Styling**: Tailwind CSS 4
+- **Icons**: Lucide React
+- **Notifications**: Sonner
+- **Date Handling**: date-fns
+- **Theme**: next-themes (dark mode)
 
 ## Getting Started
 
-To get a local copy up and running, follow these simple steps.
-
 ### Prerequisites
 
-*   PHP >= 8.2
-*   Composer
-*   Node.js and npm
-*   A database server (e.g., MySQL)
+- PHP >= 8.2
+- Composer
+- Node.js >= 18 and npm
+- MySQL or other database server
 
 ### Installation
 
-1.  **Clone the repository:**
+1. **Clone the repository:**
 
-    ```sh
-    git clone https://github.com/your-username/gympro.git
-    cd gympro
-    ```
+   ```bash
+   git clone https://github.com/your-username/gympro.git
+   cd gympro
+   ```
 
-2.  **Install backend dependencies:**
+2. **Install backend dependencies:**
 
-    ```sh
-    composer install
-    ```
+   ```bash
+   composer install
+   ```
 
-3.  **Install frontend dependencies:**
+3. **Install frontend dependencies:**
 
-    ```sh
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
-4.  **Set up your environment:**
+4. **Set up your environment:**
 
-    *   Copy the `.env.example` file to `.env`:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-        ```sh
-        cp .env.example .env
-        ```
+5. **Configure your database in `.env`:**
 
-    *   Generate a new application key:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=gympro
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
 
-        ```sh
-        php artisan key:generate
-        ```
+6. **Configure PhonePe credentials in `.env`:**
 
-    *   Configure your database and other environment variables in the `.env` file.
+   ```env
+   PHONEPE_MERCHANT_ID=your_merchant_id
+   PHONEPE_MERCHANT_USER_ID=your_merchant_user_id
+   PHONEPE_SALT_KEY=your_salt_key
+   PHONEPE_SALT_INDEX=1
+   PHONEPE_ENV=UAT
+   ```
 
-5.  **Run the database migrations:**
+7. **Run database migrations and seeders:**
 
-    ```sh
-    php artisan migrate
-    ```
+   ```bash
+   php artisan migrate --seed
+   ```
 
-6.  **Build the frontend assets:**
+8. **Build frontend assets:**
 
-    ```sh
-    npm run build
-    ```
+   ```bash
+   npm run build
+   ```
 
-7.  **Start the development server:**
+9. **Start the development server:**
 
-    ```sh
-    php artisan serve
-    ```
+   ```bash
+   # Terminal 1: Laravel server
+   php artisan serve
 
-    And in a separate terminal:
+   # Terminal 2: Vite dev server
+   npm run dev
+   ```
 
-    ```sh
-    npm run dev
-    ```
+   Or use the combined command:
+
+   ```bash
+   composer dev
+   ```
+
+10. **Access the application:**
+
+    Open your browser and navigate to `http://127.0.0.1:8000`
+
+### Default Credentials
+
+After running the seeder, you can log in with:
+
+- **Admin Account**: Check your database or seeder file for default credentials
 
 ## Configuration
 
-The application requires the following environment variables to be set in the `.env` file:
+### Environment Variables
 
-*   `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`: Database connection details.
-*   `PHONEPE_MERCHANT_ID`, `PHONEPE_MERCHANT_USER_ID`, `PHONEPE_SALT_KEY`, `PHONEPE_SALT_INDEX`, `PHONEPE_ENV`: PhonePe API credentials.
+Key environment variables to configure:
+
+```env
+# Application
+APP_NAME=Gympro
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gympro
+DB_USERNAME=root
+DB_PASSWORD=
+
+# PhonePe Payment Gateway
+PHONEPE_MERCHANT_ID=
+PHONEPE_MERCHANT_USER_ID=
+PHONEPE_SALT_KEY=
+PHONEPE_SALT_INDEX=1
+PHONEPE_ENV=UAT
+```
+
+### General Settings
+
+After installation, configure general settings via the admin panel:
+
+1. Log in as admin
+2. Navigate to Settings > General Settings
+3. Configure:
+   - Application name and logo
+   - Currency and tax settings
+   - Business information
+   - Timezone and date format
+
+## Project Structure
+
+```
+gympro/
+├── app/
+│   ├── Http/Controllers/     # Application controllers
+│   ├── Models/               # Eloquent models
+│   └── Services/             # Business logic services
+├── database/
+│   ├── migrations/           # Database migrations
+│   └── seeders/              # Database seeders
+├── resources/
+│   ├── js/
+│   │   ├── components/       # React components
+│   │   ├── pages/            # Inertia pages
+│   │   ├── layouts/          # Layout components
+│   │   └── types/            # TypeScript types
+│   └── views/                # Blade templates
+├── routes/
+│   ├── web.php               # Web routes
+│   └── settings.php          # Settings routes
+└── public/                   # Public assets
+```
+
+## Key Features Implementation
+
+### Role-Based Access Control
+
+- Dynamic permission system stored in database
+- Middleware-based route protection
+- Frontend permission checks for UI elements
+- Permissions shared via Inertia middleware
+
+### Performance Optimizations
+
+- Lazy loading for dropdown data
+- Query optimization with eager loading
+- Settings caching (1-hour TTL)
+- Pagination on all list views
+- Input sanitization for XSS prevention
+
+### Payment Integration
+
+- PhonePe payment gateway integration
+- Secure payment processing
+- Webhook handling for payment status
+- Invoice generation with PDF
+- Payment status tracking
+
+### QR Code Check-in
+
+- Unique QR codes for members
+- Quick attendance marking
+- Mobile-friendly interface
+
+## Development
+
+### Running Tests
+
+```bash
+php artisan test
+```
+
+### Code Formatting
+
+```bash
+# PHP (Laravel Pint)
+vendor/bin/pint
+
+# JavaScript/TypeScript (Prettier)
+npm run format
+
+# ESLint
+npm run lint
+```
+
+### Type Checking
+
+```bash
+npm run types
+```
+
+## Documentation
+
+- [Member Login Guide](MEMBER_LOGIN_GUIDE.md)
+- [Member Sidebar Guide](MEMBER_SIDEBAR_GUIDE.md)
+- [Payment Setup](PAYMENT_SETUP.md)
+- [RBAC Setup](RBAC_SETUP.md)
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, please open an issue in the GitHub repository or contact the development team.
+
+## Acknowledgments
+
+- Laravel Framework
+- React and the React community
+- shadcn/ui for beautiful components
+- Inertia.js for seamless SPA experience
+- All contributors and supporters
