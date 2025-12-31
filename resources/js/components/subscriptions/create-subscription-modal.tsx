@@ -1,4 +1,4 @@
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Member, Plan } from '@/types';
 
 interface Props {
@@ -17,15 +18,19 @@ interface Props {
 }
 
 export default function CreateSubscriptionModal({ open, onOpenChange, members, plans }: Props) {
+    const [recordPayment, setRecordPayment] = useState(false);
+    
     const { data, setData, post, processing, errors, reset } = useForm({
         member_id: '',
         plan_id: '',
         start_date: new Date().toISOString().split('T')[0],
-        amount_paid: '',
-        admission_fee_paid: '',
-        payment_status: 'pending' as 'pending' | 'paid' | 'overdue',
-        status: 'active' as 'active' | 'expired' | 'cancelled',
+        status: 'pending' as 'pending' | 'active' | 'expired' | 'cancelled',
         notes: '',
+        // Payment fields (optional)
+        payment_amount: '',
+        payment_method: 'cash' as 'cash' | 'card' | 'upi' | 'bank_transfer',
+        payment_type: 'plan' as 'plan' | 'admission',
+        payment_date: new Date().toISOString().split('T')[0],
     });
 
     const submit: FormEventHandler = (e) => {
@@ -33,6 +38,7 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
         post('/subscriptions', {
             onSuccess: () => {
                 reset();
+                setRecordPayment(false);
                 onOpenChange(false);
                 toast.success('Subscription created successfully');
             },
@@ -46,7 +52,7 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Add New Subscription</DialogTitle>
                     <DialogDescription>Assign a plan to a member</DialogDescription>
@@ -75,9 +81,8 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                             <Select value={data.plan_id} onValueChange={(value) => {
                                 setData('plan_id', value);
                                 const plan = plans.find(p => p.id === parseInt(value));
-                                if (plan) {
-                                    setData('amount_paid', plan.price);
-                                    setData('admission_fee_paid', plan.admission_fee);
+                                if (plan && recordPayment) {
+                                    setData('payment_amount', plan.price.toString());
                                 }
                             }}>
                                 <SelectTrigger>
@@ -105,50 +110,6 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                             {errors.start_date && <p className="text-sm text-destructive">{errors.start_date}</p>}
                         </div>
 
-                        {selectedPlan && (
-                            <div className="space-y-2">
-                                <Label>Duration</Label>
-                                <Input value={`${selectedPlan.duration_months} month(s)`} disabled />
-                            </div>
-                        )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="amount_paid">Amount Paid *</Label>
-                            <Input
-                                id="amount_paid"
-                                type="number"
-                                step="0.01"
-                                value={data.amount_paid}
-                                onChange={(e) => setData('amount_paid', e.target.value)}
-                            />
-                            {errors.amount_paid && <p className="text-sm text-destructive">{errors.amount_paid}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="admission_fee_paid">Admission Fee</Label>
-                            <Input
-                                id="admission_fee_paid"
-                                type="number"
-                                step="0.01"
-                                value={data.admission_fee_paid}
-                                onChange={(e) => setData('admission_fee_paid', e.target.value)}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="payment_status">Payment Status *</Label>
-                            <Select value={data.payment_status} onValueChange={(value: any) => setData('payment_status', value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="paid">Paid</SelectItem>
-                                    <SelectItem value="overdue">Overdue</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="status">Status *</Label>
                             <Select value={data.status} onValueChange={(value: any) => setData('status', value)}>
@@ -156,6 +117,7 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="pending">Pending</SelectItem>
                                     <SelectItem value="active">Active</SelectItem>
                                     <SelectItem value="expired">Expired</SelectItem>
                                     <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -163,12 +125,90 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                             </Select>
                         </div>
 
+                        {selectedPlan && (
+                            <div className="space-y-2 col-span-2">
+                                <div className="text-sm text-muted-foreground">
+                                    Duration: {selectedPlan.duration_months} month(s) | 
+                                    Plan Fee: ₹{selectedPlan.price} | 
+                                    Admission Fee: ₹{selectedPlan.admission_fee || 0}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="space-y-2 col-span-2">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox 
+                                    id="record_payment" 
+                                    checked={recordPayment}
+                                    onCheckedChange={(checked) => setRecordPayment(checked as boolean)}
+                                />
+                                <Label htmlFor="record_payment" className="cursor-pointer">
+                                    Record payment now
+                                </Label>
+                            </div>
+                        </div>
+
+                        {recordPayment && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="payment_amount">Payment Amount *</Label>
+                                    <Input
+                                        id="payment_amount"
+                                        type="number"
+                                        step="0.01"
+                                        value={data.payment_amount}
+                                        onChange={(e) => setData('payment_amount', e.target.value)}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="payment_method">Payment Method *</Label>
+                                    <Select value={data.payment_method} onValueChange={(value: any) => setData('payment_method', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="cash">Cash</SelectItem>
+                                            <SelectItem value="card">Card</SelectItem>
+                                            <SelectItem value="upi">UPI</SelectItem>
+                                            <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="payment_type">Payment Type *</Label>
+                                    <Select value={data.payment_type} onValueChange={(value: any) => setData('payment_type', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="plan">Plan Fee</SelectItem>
+                                            <SelectItem value="admission">Admission Fee</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="payment_date">Payment Date *</Label>
+                                    <Input
+                                        id="payment_date"
+                                        type="date"
+                                        value={data.payment_date}
+                                        onChange={(e) => setData('payment_date', e.target.value)}
+                                    />
+                                </div>
+                            </>
+                        )}
+
                         <div className="space-y-2 col-span-2">
                             <Label htmlFor="notes">Notes</Label>
                             <Textarea
                                 id="notes"
                                 value={data.notes}
                                 onChange={(e) => setData('notes', e.target.value)}
+                                placeholder="Optional notes..."
                             />
                         </div>
                     </div>
@@ -177,7 +217,7 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                             Cancel
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            Create
+                            Create Subscription
                         </Button>
                     </DialogFooter>
                 </form>

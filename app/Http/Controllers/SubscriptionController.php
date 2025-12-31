@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subscription;
 use App\Models\Member;
 use App\Models\Plan;
-use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -25,7 +25,7 @@ class SubscriptionController extends Controller
         $search = $validated['search'] ?? null;
         $perPage = $validated['per_page'] ?? 10;
 
-        $query = Subscription::with(['member', 'plan'])
+        $query = Subscription::with(['member', 'plan', 'payments'])
             ->when($search, function ($q) use ($search) {
                 $sanitized = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
                 $q->whereHas('member', function ($query) use ($sanitized) {
@@ -52,7 +52,19 @@ class SubscriptionController extends Controller
         }
 
         $validated = $this->validateSubscription($request);
-        Subscription::create($validated);
+        $subscription = Subscription::create($validated);
+
+        // Auto-create payment if payment details provided
+        if ($request->filled('payment_amount')) {
+            $subscription->payments()->create([
+                'amount' => $request->payment_amount,
+                'payment_method' => $request->payment_method ?? 'cash',
+                'payment_source' => 'manual',
+                'payment_type' => $request->payment_type ?? 'plan',
+                'payment_date' => $request->payment_date ?? now(),
+                'status' => 'completed',
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Subscription created successfully');
     }
@@ -85,10 +97,7 @@ class SubscriptionController extends Controller
             'member_id' => 'required|exists:members,id',
             'plan_id' => 'required|exists:plans,id',
             'start_date' => 'required|date',
-            'amount_paid' => 'required|numeric|min:0',
-            'admission_fee_paid' => 'nullable|numeric|min:0',
-            'payment_status' => 'required|in:pending,paid,overdue',
-            'status' => 'required|in:active,expired,cancelled',
+            'status' => 'required|in:pending,active,expired,cancelled',
             'notes' => 'nullable|string',
         ]);
 

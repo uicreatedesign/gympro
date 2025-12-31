@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use App\Models\Subscription;
-use App\Models\Payment;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,8 +20,8 @@ class MemberDashboardController extends Controller
             abort(404, 'Member profile not found');
         }
 
-        // Current Subscription
-        $currentSubscription = Subscription::with('plan')
+        // Current Subscription with payments
+        $currentSubscription = Subscription::with(['plan', 'payments'])
             ->where('member_id', $member->id)
             ->where('status', 'active')
             ->latest()
@@ -38,21 +37,26 @@ class MemberDashboardController extends Controller
             ->latest('date')
             ->first();
 
-        // Recent Payments
-        $recentPayments = Payment::where('member_id', $member->id)
-            ->latest('payment_date')
-            ->limit(5)
-            ->get();
+        // Recent Payments via subscriptions
+        $recentPayments = [];
+        if ($currentSubscription) {
+            $recentPayments = $currentSubscription->payments()
+                ->latest('payment_date')
+                ->limit(5)
+                ->get();
+        }
 
         // Calculate days remaining
         $daysRemaining = null;
         $subscriptionStatus = 'none';
         if ($currentSubscription) {
             $endDate = Carbon::parse($currentSubscription->end_date);
-            $daysRemaining = $endDate->diffInDays(Carbon::now(), false);
+            $now = Carbon::now();
+            $daysRemaining = $now->diffInDays($endDate, false);
             
             if ($daysRemaining < 0) {
                 $subscriptionStatus = 'expired';
+                $daysRemaining = abs($daysRemaining);
             } elseif ($daysRemaining <= 7) {
                 $subscriptionStatus = 'expiring';
             } else {
@@ -63,7 +67,7 @@ class MemberDashboardController extends Controller
         return Inertia::render('member/Dashboard', [
             'member' => $member,
             'currentSubscription' => $currentSubscription,
-            'daysRemaining' => abs($daysRemaining),
+            'daysRemaining' => $daysRemaining,
             'subscriptionStatus' => $subscriptionStatus,
             'attendanceThisMonth' => $attendanceThisMonth,
             'lastCheckIn' => $lastCheckIn,

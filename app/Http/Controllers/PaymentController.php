@@ -3,53 +3,81 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
-use App\Models\Member;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::with(['member', 'subscription.plan'])
-            ->latest()
-            ->paginate(10);
+        if (!auth()->user()->hasPermission('view_payments')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $search = $validated['search'] ?? null;
+        $perPage = $validated['per_page'] ?? 10;
+
+        $query = Payment::with(['subscription.member', 'subscription.plan'])
+            ->when($search, function ($q) use ($search) {
+                $sanitized = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
+                $q->where('invoice_number', 'like', "%{$sanitized}%")
+                  ->orWhere('transaction_id', 'like', "%{$sanitized}%")
+                  ->orWhereHas('subscription.member', function ($query) use ($sanitized) {
+                      $query->where('name', 'like', "%{$sanitized}%");
+                  });
+            })
+            ->latest();
 
         return Inertia::render('payments/Index', [
-            'payments' => $payments,
-            'members' => fn() => Member::all(),
+            'payments' => $query->paginate($perPage)->withQueryString(),
+            'subscriptions' => fn() => Subscription::with(['member', 'plan'])
+                ->where('status', '!=', 'cancelled')
+                ->get(),
+            'filters' => ['search' => $search, 'per_page' => $perPage],
         ]);
     }
 
     public function store(Request $request)
     {
+        if (!auth()->user()->hasPermission('create_payments')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
-            'member_id' => 'required|exists:members,id',
-            'subscription_id' => 'nullable|exists:subscriptions,id',
+            'subscription_id' => 'required|exists:subscriptions,id',
             'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,card,upi,bank_transfer',
-            'payment_type' => 'required|in:subscription,renewal,other',
+            'payment_type' => 'required|in:plan,admission,renewal',
             'payment_date' => 'required|date',
             'status' => 'required|in:pending,completed,failed',
             'notes' => 'nullable|string',
         ]);
 
+        $validated['payment_source'] = 'manual';
         Payment::create($validated);
 
-        return redirect()->back()->with('success', 'Payment created successfully');
+        return redirect()->back()->with('success', 'Payment recorded successfully');
     }
 
     public function update(Request $request, Payment $payment)
     {
+        if (!auth()->user()->hasPermission('edit_payments')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
-            'member_id' => 'required|exists:members,id',
-            'subscription_id' => 'nullable|exists:subscriptions,id',
             'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,card,upi,bank_transfer',
-            'payment_type' => 'required|in:subscription,renewal,other',
+            'payment_type' => 'required|in:plan,admission,renewal',
             'payment_date' => 'required|date',
-            'status' => 'required|in:pending,completed,failed',
+            'status' => 'required|in:pending,completed,failed,refunded',
             'notes' => 'nullable|string',
         ]);
 
@@ -60,13 +88,17 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
+        if (!auth()->user()->hasPermission('delete_payments')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $payment->delete();
         return redirect()->back()->with('success', 'Payment deleted successfully');
     }
 
     public function invoice(Payment $payment)
     {
-        $payment->load(['member', 'subscription.plan']);
+        $payment->load(['subscription.member', 'subscription.plan']);
 
         $pdf = Pdf::loadView('invoices.payment', compact('payment'));
         return $pdf->download('invoice-' . $payment->invoice_number . '.pdf');

@@ -20,10 +20,11 @@ interface PaginatedData {
 
 interface Props extends PageProps {
     payments: PaginatedData;
-    members: Member[];
+    subscriptions: any[];
+    filters: { search: string | null; per_page: number };
 }
 
-export default function Index({ payments, members }: Props) {
+export default function Index({ payments, subscriptions, filters }: Props) {
     const { auth } = usePage().props as any;
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [editPayment, setEditPayment] = useState<Payment | null>(null);
@@ -98,7 +99,7 @@ export default function Index({ payments, members }: Props) {
                 <CreatePaymentModal
                     open={createModalOpen}
                     onOpenChange={setCreateModalOpen}
-                    members={members}
+                    subscriptions={subscriptions || []}
                 />
             )}
 

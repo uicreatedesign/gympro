@@ -18,20 +18,41 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'role' => 'nullable|exists:roles,id',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
+        $search = $validated['search'] ?? null;
+        $roleFilter = $validated['role'] ?? null;
         $perPage = $validated['per_page'] ?? 10;
 
+        $query = User::with('roles')
+            ->when($search, function ($q) use ($search) {
+                $sanitized = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
+                $q->where('name', 'like', "%{$sanitized}%")
+                  ->orWhere('email', 'like', "%{$sanitized}%");
+            })
+            ->when($roleFilter, function ($q) use ($roleFilter) {
+                $q->whereHas('roles', function ($query) use ($roleFilter) {
+                    $query->where('roles.id', $roleFilter);
+                });
+            })
+            ->latest();
+
         return Inertia::render('users/Index', [
-            'users' => User::with('roles')->latest()->paginate($perPage)->withQueryString(),
+            'users' => $query->paginate($perPage)->withQueryString(),
             'roles' => fn() => Role::all(),
             'stats' => [
                 'total' => User::count(),
                 'active' => User::where('status', 'active')->count(),
                 'inactive' => User::where('status', 'inactive')->count(),
             ],
-            'filters' => ['per_page' => $perPage],
+            'filters' => [
+                'search' => $search,
+                'role' => $roleFilter,
+                'per_page' => $perPage,
+            ],
         ]);
     }
 

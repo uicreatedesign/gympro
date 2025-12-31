@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use App\Models\Subscription;
-use Illuminate\Support\Facades\DB;
+use App\Models\Payment;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -17,19 +17,20 @@ class DashboardController extends Controller
             'active_members' => Member::where('status', 'active')->count(),
             'total_subscriptions' => Subscription::count(),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
-            'revenue_this_month' => Subscription::whereMonth('created_at', Carbon::now()->month)
-                ->whereYear('created_at', Carbon::now()->year)
-                ->sum(DB::raw('amount_paid + admission_fee_paid')),
+            'revenue_this_month' => Payment::where('status', 'completed')
+                ->whereMonth('payment_date', Carbon::now()->month)
+                ->whereYear('payment_date', Carbon::now()->year)
+                ->sum('amount'),
         ];
 
-        $expiring_soon = Subscription::with(['member', 'plan'])
+        $expiring_soon = Subscription::with(['member', 'plan', 'payments'])
             ->where('status', 'active')
             ->whereBetween('end_date', [Carbon::now(), Carbon::now()->addDays(7)])
             ->orderBy('end_date')
             ->limit(5)
             ->get();
 
-        $recent_subscriptions = Subscription::with(['member', 'plan'])
+        $recent_subscriptions = Subscription::with(['member', 'plan', 'payments'])
             ->latest()
             ->limit(5)
             ->get();

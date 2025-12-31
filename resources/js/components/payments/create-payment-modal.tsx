@@ -7,25 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Member, Subscription } from '@/types';
+import { Subscription } from '@/types';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    members: Member[];
+    subscriptions: Subscription[];
 }
 
-export default function CreatePaymentModal({ open, onOpenChange, members }: Props) {
+export default function CreatePaymentModal({ open, onOpenChange, subscriptions }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        member_id: '',
         subscription_id: '',
         amount: '',
         payment_method: 'cash' as 'cash' | 'card' | 'upi' | 'bank_transfer',
-        payment_type: 'subscription' as 'subscription' | 'admission' | 'other',
+        payment_type: 'plan' as 'plan' | 'admission' | 'renewal',
         payment_date: new Date().toISOString().split('T')[0],
-        status: 'completed' as 'completed' | 'pending' | 'failed' | 'refunded',
+        status: 'completed' as 'completed' | 'pending' | 'failed',
         notes: '',
-        transaction_id: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -44,52 +42,52 @@ export default function CreatePaymentModal({ open, onOpenChange, members }: Prop
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Record Payment</DialogTitle>
-                    <DialogDescription>Add a new payment record</DialogDescription>
+                    <DialogDescription>Record a manual payment for a subscription</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit}>
                     <div className="grid grid-cols-2 gap-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="member_id">Member</Label>
-                            <Select value={data.member_id} onValueChange={(value) => setData('member_id', value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select member" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {members.map((member) => (
-                                        <SelectItem key={member.id} value={member.id.toString()}>
-                                            {member.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.member_id && <p className="text-sm text-destructive">{errors.member_id}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="subscription_id">Subscription (Optional)</Label>
+                        <div className="space-y-2 col-span-2">
+                            <Label htmlFor="subscription_id">Subscription *</Label>
                             <Select value={data.subscription_id} onValueChange={(value) => setData('subscription_id', value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select subscription" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="0">None</SelectItem>
+                                    {subscriptions?.map((sub: any) => (
+                                        <SelectItem key={sub.id} value={sub.id.toString()}>
+                                            {sub.member?.name} - {sub.plan?.name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
+                            {errors.subscription_id && <p className="text-sm text-destructive">{errors.subscription_id}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="amount">Amount</Label>
+                            <Label htmlFor="amount">Amount *</Label>
                             <Input
                                 id="amount"
                                 type="number"
+                                step="0.01"
                                 value={data.amount}
                                 onChange={(e) => setData('amount', e.target.value)}
+                                placeholder="0.00"
                             />
                             {errors.amount && <p className="text-sm text-destructive">{errors.amount}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="payment_method">Payment Method</Label>
+                            <Label htmlFor="payment_date">Payment Date *</Label>
+                            <Input
+                                id="payment_date"
+                                type="date"
+                                value={data.payment_date}
+                                onChange={(e) => setData('payment_date', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="payment_method">Payment Method *</Label>
                             <Select value={data.payment_method} onValueChange={(value: any) => setData('payment_method', value)}>
                                 <SelectTrigger>
                                     <SelectValue />
@@ -103,29 +101,20 @@ export default function CreatePaymentModal({ open, onOpenChange, members }: Prop
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="payment_type">Payment Type</Label>
+                            <Label htmlFor="payment_type">Payment Type *</Label>
                             <Select value={data.payment_type} onValueChange={(value: any) => setData('payment_type', value)}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="subscription">Subscription</SelectItem>
-                                    <SelectItem value="admission">Admission</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
+                                    <SelectItem value="plan">Plan Fee</SelectItem>
+                                    <SelectItem value="admission">Admission Fee</SelectItem>
+                                    <SelectItem value="renewal">Renewal</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="payment_date">Payment Date</Label>
-                            <Input
-                                id="payment_date"
-                                type="date"
-                                value={data.payment_date}
-                                onChange={(e) => setData('payment_date', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="status">Status</Label>
+                            <Label htmlFor="status">Status *</Label>
                             <Select value={data.status} onValueChange={(value: any) => setData('status', value)}>
                                 <SelectTrigger>
                                     <SelectValue />
@@ -134,17 +123,8 @@ export default function CreatePaymentModal({ open, onOpenChange, members }: Prop
                                     <SelectItem value="completed">Completed</SelectItem>
                                     <SelectItem value="pending">Pending</SelectItem>
                                     <SelectItem value="failed">Failed</SelectItem>
-                                    <SelectItem value="refunded">Refunded</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="transaction_id">Transaction ID (Optional)</Label>
-                            <Input
-                                id="transaction_id"
-                                value={data.transaction_id}
-                                onChange={(e) => setData('transaction_id', e.target.value)}
-                            />
                         </div>
                         <div className="space-y-2 col-span-2">
                             <Label htmlFor="notes">Notes</Label>
@@ -152,6 +132,7 @@ export default function CreatePaymentModal({ open, onOpenChange, members }: Prop
                                 id="notes"
                                 value={data.notes}
                                 onChange={(e) => setData('notes', e.target.value)}
+                                placeholder="Optional notes..."
                             />
                         </div>
                     </div>
@@ -160,7 +141,7 @@ export default function CreatePaymentModal({ open, onOpenChange, members }: Prop
                             Cancel
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            Create
+                            Record Payment
                         </Button>
                     </DialogFooter>
                 </form>

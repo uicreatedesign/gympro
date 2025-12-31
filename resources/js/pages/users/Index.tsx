@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { User, Role, PageProps } from '@/types';
@@ -6,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Users as UsersIcon, UserCheck, UserX, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Users as UsersIcon, UserCheck, UserX, Plus, Search, X } from 'lucide-react';
 import UserTable from '@/components/users/user-table';
 import CreateUserModal from '@/components/users/create-user-modal';
 import EditUserModal from '@/components/users/edit-user-modal';
@@ -28,7 +30,11 @@ interface Props extends PageProps {
         active: number;
         inactive: number;
     };
-    filters: { per_page: number };
+    filters: { 
+        search: string | null;
+        role: number | null;
+        per_page: number;
+    };
 }
 
 export default function Index({ users, roles, stats, filters }: Props) {
@@ -36,17 +42,42 @@ export default function Index({ users, roles, stats, filters }: Props) {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [editUser, setEditUser] = useState<User | null>(null);
     const [deleteUser, setDeleteUser] = useState<User | null>(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const [roleFilter, setRoleFilter] = useState(filters.role?.toString() || 'all');
+    const [debouncedSearch] = useDebounce(search, 500);
 
     const canCreate = auth.permissions.includes('create_users');
     const canEdit = auth.permissions.includes('edit_users');
     const canDelete = auth.permissions.includes('delete_users');
 
+    useEffect(() => {
+        router.get('/users', { 
+            search: debouncedSearch || undefined, 
+            role: roleFilter !== 'all' ? roleFilter : undefined,
+            per_page: filters.per_page 
+        }, { preserveState: true, preserveScroll: true });
+    }, [debouncedSearch, roleFilter]);
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setRoleFilter('all');
+    };
+
     const handlePageChange = (page: number) => {
-        router.get('/users', { page, per_page: filters.per_page }, { preserveState: true });
+        router.get('/users', { 
+            page, 
+            search: search || undefined,
+            role: roleFilter !== 'all' ? roleFilter : undefined,
+            per_page: filters.per_page 
+        }, { preserveState: true });
     };
 
     const handlePerPageChange = (value: string) => {
-        router.get('/users', { per_page: value }, { preserveState: true });
+        router.get('/users', { 
+            search: search || undefined,
+            role: roleFilter !== 'all' ? roleFilter : undefined,
+            per_page: value 
+        }, { preserveState: true });
     };
 
     const startItem = (users.current_page - 1) * users.per_page + 1;
@@ -110,6 +141,35 @@ export default function Index({ users, roles, stats, filters }: Props) {
 
                 <Card>
                     <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-center justify-end gap-2">
+                            <div className="relative w-64">
+                                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search users..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-8 h-9"
+                                />
+                            </div>
+                            <Select value={roleFilter} onValueChange={setRoleFilter}>
+                                <SelectTrigger className="w-40 h-9">
+                                    <SelectValue placeholder="Role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Roles</SelectItem>
+                                    {roles.map((role) => (
+                                        <SelectItem key={role.id} value={role.id.toString()}>
+                                            {role.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {(search || roleFilter !== 'all') && (
+                                <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
                         <UserTable 
                             users={users.data} 
                             roles={roles}
