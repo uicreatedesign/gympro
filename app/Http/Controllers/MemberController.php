@@ -15,7 +15,7 @@ class MemberController extends Controller
         }
 
         return Inertia::render('Members/Index', [
-            'members' => Member::with('user')->latest()->paginate(50),
+            'members' => Member::with('user')->latest()->paginate(10),
         ]);
     }
 

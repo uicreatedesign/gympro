@@ -27,6 +27,7 @@ export default function SubscriptionTable({ subscriptions, onEdit, onDelete }: P
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-16">Sr No</TableHead>
                     <TableHead>Member</TableHead>
                     <TableHead>Plan</TableHead>
                     <TableHead>Start Date</TableHead>
@@ -38,8 +39,9 @@ export default function SubscriptionTable({ subscriptions, onEdit, onDelete }: P
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {subscriptions.map((subscription) => (
+                {subscriptions.map((subscription, index) => (
                     <TableRow key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">{subscription.member?.name}</TableCell>
                         <TableCell>{subscription.plan?.name}</TableCell>
                         <TableCell>{new Date(subscription.start_date).toLocaleDateString()}</TableCell>

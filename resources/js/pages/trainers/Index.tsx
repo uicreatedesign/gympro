@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { Trainer, PageProps } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Users, UserCheck, UserX, Plus } from 'lucide-react';
 import TrainerTable from '@/components/trainers/trainer-table';
@@ -10,16 +12,25 @@ import CreateTrainerModal from '@/components/trainers/create-trainer-modal';
 import EditTrainerModal from '@/components/trainers/edit-trainer-modal';
 import DeleteTrainerDialog from '@/components/trainers/delete-trainer-dialog';
 
+interface PaginatedData {
+    data: Trainer[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
 interface Props extends PageProps {
-    trainers: Trainer[] | { data: Trainer[] };
+    trainers: PaginatedData;
     stats: {
         total: number;
         active: number;
         inactive: number;
     };
+    filters: { per_page: number };
 }
 
-export default function Index({ trainers, stats }: Props) {
+export default function Index({ trainers, stats, filters }: Props) {
     const { auth } = usePage().props as any;
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [editTrainer, setEditTrainer] = useState<Trainer | null>(null);
@@ -29,7 +40,28 @@ export default function Index({ trainers, stats }: Props) {
     const canEdit = auth.permissions.includes('edit_trainers');
     const canDelete = auth.permissions.includes('delete_trainers');
 
-    const trainerData = Array.isArray(trainers) ? trainers : trainers.data;
+    const handlePageChange = (page: number) => {
+        router.get('/trainers', { page, per_page: filters.per_page }, { preserveState: true });
+    };
+
+    const handlePerPageChange = (value: string) => {
+        router.get('/trainers', { per_page: value }, { preserveState: true });
+    };
+
+    const startItem = (trainers.current_page - 1) * trainers.per_page + 1;
+    const endItem = Math.min(trainers.current_page * trainers.per_page, trainers.total);
+
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const { current_page, last_page } = trainers;
+        if (last_page <= 7) return Array.from({ length: last_page }, (_, i) => i + 1);
+        pages.push(1);
+        if (current_page > 3) pages.push('...');
+        for (let i = Math.max(2, current_page - 1); i <= Math.min(last_page - 1, current_page + 1); i++) pages.push(i);
+        if (current_page < last_page - 2) pages.push('...');
+        pages.push(last_page);
+        return pages;
+    };
 
     return (
         <AppLayout>
@@ -76,12 +108,48 @@ export default function Index({ trainers, stats }: Props) {
                 </div>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-6 space-y-4">
                         <TrainerTable 
-                            trainers={trainerData}
+                            trainers={trainers.data}
                             onEdit={canEdit ? setEditTrainer : undefined}
                             onDelete={canDelete ? setDeleteTrainer : undefined}
                         />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <div className="text-sm text-muted-foreground hidden">
+                                    Showing {startItem} to {endItem} of {trainers.total} results
+                                </div>
+                                <div className="flex items-center">
+                                    <span className="text-sm text-muted-foreground">Rows per page</span>
+                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
+                                        <SelectTrigger className="w-20">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="10">10</SelectItem>
+                                            <SelectItem value="25">25</SelectItem>
+                                            <SelectItem value="50">50</SelectItem>
+                                            <SelectItem value="100">100</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious onClick={() => handlePageChange(trainers.current_page - 1)} className={trainers.current_page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
+                                    </PaginationItem>
+                                    {getPageNumbers().map((page, idx) => (
+                                        <PaginationItem key={idx}>
+                                            {page === '...' ? <PaginationEllipsis /> : <PaginationLink onClick={() => handlePageChange(page as number)} isActive={page === trainers.current_page} className="cursor-pointer">{page}</PaginationLink>}
+                                        </PaginationItem>
+                                    ))}
+                                    <PaginationItem>
+                                        <PaginationNext onClick={() => handlePageChange(trainers.current_page + 1)} className={trainers.current_page === trainers.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

@@ -19,6 +19,7 @@ export default function PaymentTable({ payments, onEdit, onDelete }: Props) {
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-16">Sr No</TableHead>
                     <TableHead>Invoice #</TableHead>
                     <TableHead>Member</TableHead>
                     <TableHead>Amount</TableHead>
@@ -29,8 +30,9 @@ export default function PaymentTable({ payments, onEdit, onDelete }: Props) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {payments.map((payment) => (
+                {payments.map((payment, index) => (
                     <TableRow key={payment.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">{payment.invoice_number}</TableCell>
                         <TableCell>{payment.member?.name}</TableCell>
                         <TableCell>₹{payment.amount}</TableCell>

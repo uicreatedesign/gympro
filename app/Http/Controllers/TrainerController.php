@@ -10,13 +10,19 @@ use Inertia\Inertia;
 
 class TrainerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_trainers')) {
             abort(403, 'Unauthorized action.');
         }
 
-        $trainers = Trainer::with('user')->latest()->paginate(50);
+        $validated = $request->validate([
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $perPage = $validated['per_page'] ?? 10;
+
+        $trainers = Trainer::with('user')->latest()->paginate($perPage)->withQueryString();
 
         return Inertia::render('trainers/Index', [
             'trainers' => $trainers,
@@ -25,6 +31,7 @@ class TrainerController extends Controller
                 'active' => Trainer::where('status', 'active')->count(),
                 'inactive' => Trainer::where('status', 'inactive')->count(),
             ],
+            'filters' => ['per_page' => $perPage],
         ]);
     }
 

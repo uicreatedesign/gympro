@@ -16,6 +16,7 @@ export default function AttendanceTable({ attendances, onCheckOut, onEdit, onDel
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-16">Sr No</TableHead>
                     <TableHead>Member</TableHead>
                     <TableHead>Check-in Time</TableHead>
                     <TableHead>Check-out Time</TableHead>
@@ -26,13 +27,14 @@ export default function AttendanceTable({ attendances, onCheckOut, onEdit, onDel
             <TableBody>
                 {attendances.length === 0 ? (
                     <TableRow>
-                        <TableCell colSpan={(onCheckOut || onEdit || onDelete) ? 5 : 4} className="text-center text-muted-foreground">
+                        <TableCell colSpan={(onCheckOut || onEdit || onDelete) ? 6 : 5} className="text-center text-muted-foreground">
                             No attendance records for today
                         </TableCell>
                     </TableRow>
                 ) : (
-                    attendances.map((attendance) => (
+                    attendances.map((attendance, index) => (
                         <TableRow key={attendance.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
+                            <TableCell>{index + 1}</TableCell>
                             <TableCell className="font-medium">{attendance.member?.name}</TableCell>
                             <TableCell>{attendance.check_in_time}</TableCell>
                             <TableCell>{attendance.check_out_time || '-'}</TableCell>

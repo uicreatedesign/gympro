@@ -15,7 +15,7 @@ class PlanController extends Controller
         }
 
         return Inertia::render('Plans/Index', [
-            'plans' => Plan::latest()->paginate(50),
+            'plans' => Plan::latest()->paginate(10),
         ]);
     }
 

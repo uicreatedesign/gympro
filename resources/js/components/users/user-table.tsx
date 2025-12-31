@@ -16,6 +16,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-16">Sr No</TableHead>
                     <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Roles</TableHead>
@@ -24,8 +25,9 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {users.map((user) => (
+                {users.map((user, index) => (
                     <TableRow key={user.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell>
                             <div className="flex items-center gap-3">
                                 <Avatar>

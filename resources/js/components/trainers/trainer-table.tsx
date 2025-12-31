@@ -15,6 +15,7 @@ export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-16">Sr No</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Specialization</TableHead>
@@ -26,8 +27,9 @@ export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {trainers.map((trainer) => (
+                {trainers.map((trainer, index) => (
                     <TableRow key={trainer.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">{trainer.user?.name}</TableCell>
                         <TableCell>{trainer.user?.email}</TableCell>
                         <TableCell>{trainer.specialization}</TableCell>

@@ -52,7 +52,7 @@ export default function EditRoleModal({ open, onOpenChange, role, permissions }:
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Edit Role</DialogTitle>
                     <DialogDescription>Update role details and permissions</DialogDescription>
@@ -78,7 +78,7 @@ export default function EditRoleModal({ open, onOpenChange, role, permissions }:
                         </div>
                         <div className="space-y-2">
                             <Label>Permissions</Label>
-                            <div className="grid grid-cols-2 gap-4 border rounded-lg p-4">
+                            <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 max-h-[300px] overflow-y-auto">
                                 {permissions.map((permission) => (
                                     <div key={permission.id} className="flex items-center space-x-2">
                                         <Checkbox

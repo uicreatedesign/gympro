@@ -72,12 +72,6 @@ const mainNavItems = [
         icon: UserCog,
         permission: 'view_users',
     },
-    {
-        title: 'Roles & Permissions',
-        href: roles.index(),
-        icon: Shield,
-        permission: 'view_roles',
-    },
 ];
 
 const footerNavItems: NavItem[] = [

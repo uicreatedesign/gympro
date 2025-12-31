@@ -8,9 +8,10 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
+import roles from '@/routes/roles';
 import { type User } from '@/types';
-import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { LogOut, Settings, Shield, Users } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -18,6 +19,8 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const { auth } = usePage().props as any;
+    const userPermissions = auth?.permissions || [];
 
     const handleLogout = () => {
         cleanup();
@@ -45,6 +48,20 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                         Settings
                     </Link>
                 </DropdownMenuItem>
+                {userPermissions.includes('view_roles') && (
+                    <DropdownMenuItem asChild>
+                        <Link
+                            className="block w-full"
+                            href={roles.index()}
+                            as="button"
+                            prefetch
+                            onClick={cleanup}
+                        >
+                            <Shield className="mr-2" />
+                            Roles & Permissions
+                        </Link>
+                    </DropdownMenuItem>
+                )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

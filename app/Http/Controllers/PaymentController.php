@@ -14,7 +14,7 @@ class PaymentController extends Controller
     {
         $payments = Payment::with(['member', 'subscription.plan'])
             ->latest()
-            ->paginate(50);
+            ->paginate(10);
 
         return Inertia::render('payments/Index', [
             'payments' => $payments,

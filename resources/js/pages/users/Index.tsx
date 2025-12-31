@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { User, Role, PageProps } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Users as UsersIcon, UserCheck, UserX, Plus } from 'lucide-react';
 import UserTable from '@/components/users/user-table';
@@ -10,17 +12,26 @@ import CreateUserModal from '@/components/users/create-user-modal';
 import EditUserModal from '@/components/users/edit-user-modal';
 import DeleteUserDialog from '@/components/users/delete-user-dialog';
 
+interface PaginatedData {
+    data: User[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
 interface Props extends PageProps {
-    users: User[] | { data: User[] };
+    users: PaginatedData;
     roles: Role[];
     stats: {
         total: number;
         active: number;
         inactive: number;
     };
+    filters: { per_page: number };
 }
 
-export default function Index({ users, roles, stats }: Props) {
+export default function Index({ users, roles, stats, filters }: Props) {
     const { auth } = usePage().props as any;
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [editUser, setEditUser] = useState<User | null>(null);
@@ -30,7 +41,28 @@ export default function Index({ users, roles, stats }: Props) {
     const canEdit = auth.permissions.includes('edit_users');
     const canDelete = auth.permissions.includes('delete_users');
 
-    const userData = Array.isArray(users) ? users : users.data;
+    const handlePageChange = (page: number) => {
+        router.get('/users', { page, per_page: filters.per_page }, { preserveState: true });
+    };
+
+    const handlePerPageChange = (value: string) => {
+        router.get('/users', { per_page: value }, { preserveState: true });
+    };
+
+    const startItem = (users.current_page - 1) * users.per_page + 1;
+    const endItem = Math.min(users.current_page * users.per_page, users.total);
+
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const { current_page, last_page } = users;
+        if (last_page <= 7) return Array.from({ length: last_page }, (_, i) => i + 1);
+        pages.push(1);
+        if (current_page > 3) pages.push('...');
+        for (let i = Math.max(2, current_page - 1); i <= Math.min(last_page - 1, current_page + 1); i++) pages.push(i);
+        if (current_page < last_page - 2) pages.push('...');
+        pages.push(last_page);
+        return pages;
+    };
 
     return (
         <AppLayout>
@@ -76,12 +108,52 @@ export default function Index({ users, roles, stats }: Props) {
                     </Card>
                 </div>
 
-                <UserTable 
-                    users={userData} 
-                    roles={roles}
-                    onEdit={canEdit ? setEditUser : undefined}
-                    onDelete={canDelete ? setDeleteUser : undefined}
-                />
+                <Card>
+                    <CardContent className="pt-6 space-y-4">
+                        <UserTable 
+                            users={users.data} 
+                            roles={roles}
+                            onEdit={canEdit ? setEditUser : undefined}
+                            onDelete={canDelete ? setDeleteUser : undefined}
+                        />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing {startItem} to {endItem} of {users.total} results
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground">Rows per page</span>
+                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
+                                        <SelectTrigger className="w-20">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="10">10</SelectItem>
+                                            <SelectItem value="25">25</SelectItem>
+                                            <SelectItem value="50">50</SelectItem>
+                                            <SelectItem value="100">100</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious onClick={() => handlePageChange(users.current_page - 1)} className={users.current_page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
+                                    </PaginationItem>
+                                    {getPageNumbers().map((page, idx) => (
+                                        <PaginationItem key={idx}>
+                                            {page === '...' ? <PaginationEllipsis /> : <PaginationLink onClick={() => handlePageChange(page as number)} isActive={page === users.current_page} className="cursor-pointer">{page}</PaginationLink>}
+                                        </PaginationItem>
+                                    ))}
+                                    <PaginationItem>
+                                        <PaginationNext onClick={() => handlePageChange(users.current_page + 1)} className={users.current_page === users.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {canCreate && (

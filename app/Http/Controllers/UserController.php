@@ -11,20 +11,27 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_users')) {
             abort(403, 'Unauthorized action.');
         }
 
+        $validated = $request->validate([
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $perPage = $validated['per_page'] ?? 10;
+
         return Inertia::render('users/Index', [
-            'users' => User::with('roles')->latest()->paginate(50),
+            'users' => User::with('roles')->latest()->paginate($perPage)->withQueryString(),
             'roles' => fn() => Role::all(),
             'stats' => [
                 'total' => User::count(),
                 'active' => User::where('status', 'active')->count(),
                 'inactive' => User::where('status', 'inactive')->count(),
             ],
+            'filters' => ['per_page' => $perPage],
         ]);
     }
 
