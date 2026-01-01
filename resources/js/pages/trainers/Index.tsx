@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { Trainer, PageProps } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Users, UserCheck, UserX, Plus } from 'lucide-react';
+import { Users, UserCheck, UserX, Plus, Search } from 'lucide-react';
 import TrainerTable from '@/components/trainers/trainer-table';
 import CreateTrainerModal from '@/components/trainers/create-trainer-modal';
 import EditTrainerModal from '@/components/trainers/edit-trainer-modal';
@@ -27,7 +28,11 @@ interface Props extends PageProps {
         active: number;
         inactive: number;
     };
-    filters: { per_page: number };
+    filters: { 
+        per_page: number;
+        search: string | null;
+        status: string | null;
+    };
 }
 
 export default function Index({ trainers, stats, filters }: Props) {
@@ -35,17 +40,49 @@ export default function Index({ trainers, stats, filters }: Props) {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [editTrainer, setEditTrainer] = useState<Trainer | null>(null);
     const [deleteTrainer, setDeleteTrainer] = useState<Trainer | null>(null);
+    const [search, setSearch] = useState(filters.search || '');
+    const [status, setStatus] = useState(filters.status || 'all');
 
     const canCreate = auth.permissions.includes('create_trainers');
     const canEdit = auth.permissions.includes('edit_trainers');
     const canDelete = auth.permissions.includes('delete_trainers');
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            router.get('/trainers', { 
+                search: search || undefined, 
+                status: status !== 'all' ? status : undefined,
+                per_page: filters.per_page 
+            }, { preserveState: true, preserveScroll: true });
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const handleStatusChange = (value: string) => {
+        setStatus(value);
+        router.get('/trainers', { 
+            search: search || undefined, 
+            status: value !== 'all' ? value : undefined,
+            per_page: filters.per_page 
+        }, { preserveState: true });
+    };
+
     const handlePageChange = (page: number) => {
-        router.get('/trainers', { page, per_page: filters.per_page }, { preserveState: true });
+        router.get('/trainers', { 
+            page, 
+            per_page: filters.per_page,
+            search: search || undefined,
+            status: status !== 'all' ? status : undefined
+        }, { preserveState: true });
     };
 
     const handlePerPageChange = (value: string) => {
-        router.get('/trainers', { per_page: value }, { preserveState: true });
+        router.get('/trainers', { 
+            per_page: value,
+            search: search || undefined,
+            status: status !== 'all' ? status : undefined
+        }, { preserveState: true });
     };
 
     const startItem = (trainers.current_page - 1) * trainers.per_page + 1;
@@ -109,11 +146,41 @@ export default function Index({ trainers, stats, filters }: Props) {
 
                 <Card>
                     <CardContent className="pt-6 space-y-4">
+                        <div className="flex gap-2">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search by name, email, or specialization..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-9"
+                                />
+                            </div>
+                            <Select value={status} onValueChange={handleStatusChange}>
+                                <SelectTrigger className="w-40">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <TrainerTable 
                             trainers={trainers.data}
                             onEdit={canEdit ? setEditTrainer : undefined}
                             onDelete={canDelete ? setDeleteTrainer : undefined}
                         />
+                        {trainers.data.length === 0 && (
+                            <div className="text-center py-12">
+                                <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold">No trainers found</h3>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    {search || status !== 'all' ? 'Try adjusting your filters' : 'Get started by adding a new trainer'}
+                                </p>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <div className="text-sm text-muted-foreground hidden">

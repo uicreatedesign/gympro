@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Permission, Role } from '@/types';
+import { type BreadcrumbItem } from '@/types';
 import RoleTable from '@/components/roles/role-table';
 import CreateRoleModal from '@/components/roles/create-role-modal';
 import EditRoleModal from '@/components/roles/edit-role-modal';
@@ -13,6 +14,13 @@ interface Props {
     roles: Role[];
     permissions: Permission[];
 }
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Roles & Permissions',
+        href: '/roles',
+    },
+];
 
 export default function Index({ roles, permissions }: Props) {
     const { auth } = usePage().props as any;
@@ -25,7 +33,7 @@ export default function Index({ roles, permissions }: Props) {
     const canDelete = auth.permissions.includes('delete_roles');
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles & Permissions" />
             
             <div className="container mx-auto p-6 space-y-6">

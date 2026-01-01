@@ -8,6 +8,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { type BreadcrumbItem } from '@/types';
 import { Users as UsersIcon, UserCheck, UserX, Plus, Search, X } from 'lucide-react';
 import UserTable from '@/components/users/user-table';
 import CreateUserModal from '@/components/users/create-user-modal';
@@ -21,6 +22,13 @@ interface PaginatedData {
     per_page: number;
     total: number;
 }
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Users',
+        href: '/users',
+    },
+];
 
 interface Props extends PageProps {
     users: PaginatedData;
@@ -96,7 +104,7 @@ export default function Index({ users, roles, stats, filters }: Props) {
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Users" />
             <div className="container mx-auto p-6 space-y-6">
                 <div className="flex justify-between items-center">
