@@ -143,6 +143,7 @@ class PhonePePaymentController extends Controller
         $subscription = Subscription::create([
             'member_id' => $member->id,
             'plan_id' => $plan->id,
+            'trainer_id' => $request->trainer_id ?? null,
             'start_date' => $startDate,
             'end_date' => $endDate,
             'amount' => $pendingPayment->amount,

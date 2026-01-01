@@ -8,6 +8,7 @@ import { Member } from '@/types';
 import MemberTable from '@/components/members/member-table';
 import CreateMemberModal from '@/components/members/create-member-modal';
 import EditMemberModal from '@/components/members/edit-member-modal';
+import ViewMemberModal from '@/components/members/view-member-modal';
 import DeleteMemberDialog from '@/components/members/delete-member-dialog';
 
 interface PaginatedData {
@@ -24,6 +25,7 @@ interface Props {
 
 export default function Index({ members }: Props) {
     const { auth } = usePage().props as any;
+    const [viewMember, setViewMember] = useState<Member | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [editMember, setEditMember] = useState<Member | null>(null);
     const [deleteMember, setDeleteMember] = useState<Member | null>(null);
@@ -70,7 +72,8 @@ export default function Index({ members }: Props) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <MemberTable 
-                            members={members.data} 
+                            members={members.data}
+                            onView={setViewMember}
                             onEdit={canEdit ? setEditMember : undefined}
                             onDelete={canDelete ? setDeleteMember : undefined}
                         />
@@ -94,6 +97,14 @@ export default function Index({ members }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            {viewMember && (
+                <ViewMemberModal 
+                    open={!!viewMember} 
+                    onOpenChange={(open) => !open && setViewMember(null)}
+                    member={viewMember}
+                />
+            )}
 
             {canCreate && (
                 <CreateMemberModal 

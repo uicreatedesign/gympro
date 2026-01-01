@@ -1,10 +1,12 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Member, Subscription, Payment, Attendance, PageProps } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, CreditCard, TrendingUp, Download, User, ArrowRight } from 'lucide-react';
+import { Calendar, CreditCard, TrendingUp, Download, User, ArrowRight, LogIn, LogOut, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface Props extends PageProps {
     member: Member;
@@ -17,6 +19,43 @@ interface Props extends PageProps {
 }
 
 export default function Dashboard({ member, currentSubscription, daysRemaining, subscriptionStatus, attendanceThisMonth, lastCheckIn, recentPayments }: Props) {
+    const [processing, setProcessing] = useState(false);
+   
+    const handleCheckIn = () => {
+        setProcessing(true);
+        router.post('/attendances', {
+            member_id: member.id,
+            date: new Date().toISOString().split('T')[0],
+            check_in_time: new Date().toTimeString().split(' ')[0],
+            status: 'present'
+        }, {
+            onSuccess: () => {
+                toast.success('Checked in successfully');
+                router.reload();
+            },
+            onError: () => {
+                toast.error('Failed to check in');
+                setProcessing(false);
+            }
+        });
+    };
+
+    const handleCheckOut = () => {
+        if (!lastCheckIn) return;
+        setProcessing(true);
+        router.put(`/attendances/${lastCheckIn.id}`, {
+            check_out_time: new Date().toTimeString().split(' ')[0]
+        }, {
+            onSuccess: () => {
+                toast.success('Checked out successfully');
+                router.reload();
+            },
+            onError: () => {
+                toast.error('Failed to check out');
+                setProcessing(false);
+            }
+        });
+    };
     const statusColors = {
         active: 'bg-green-500',
         expiring: 'bg-yellow-500',
@@ -38,10 +77,71 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                 {/* Welcome Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Welcome back, {member.name}!</h1>
+                        <h1 className="text-3xl font-bold">Welcome back, {member.user?.name}!</h1>
                         <p className="text-muted-foreground">Here's your fitness journey overview</p>
                     </div>
                 </div>
+
+                {/* Check-in/Check-out Card */}
+                <Card className="border-2 border-primary">
+                    <CardHeader>
+                        <CardTitle className="text-xl">Quick Check-in</CardTitle>
+                        <CardDescription>Mark your attendance for today</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {lastCheckIn && new Date(lastCheckIn.date).toDateString() === new Date().toDateString() ? (
+                                <>
+                                    <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                                        <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                            <LogIn className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Checked In</p>
+                                            <p className="text-lg font-semibold">{lastCheckIn.check_in_time}</p>
+                                        </div>
+                                    </div>
+                                    {lastCheckIn.check_out_time ? (
+                                        <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                                            <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                                <LogOut className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">Checked Out</p>
+                                                <p className="text-lg font-semibold">{lastCheckIn.check_out_time}</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Button size="lg" variant="destructive" className="h-full" onClick={handleCheckOut} disabled={processing}>
+                                            <LogOut className="mr-2 h-5 w-5" />
+                                            {processing ? 'Processing...' : 'Check Out'}
+                                        </Button>
+                                    )}
+                                </>
+                            ) : (
+                                <Button size="lg" className="md:col-span-2" onClick={handleCheckIn} disabled={processing}>
+                                    <LogIn className="mr-2 h-5 w-5" />
+                                    {processing ? 'Processing...' : 'Check In Now'}
+                                </Button>
+                            )}
+                        </div>
+                        {lastCheckIn && new Date(lastCheckIn.date).toDateString() === new Date().toDateString() && lastCheckIn.check_in_time && lastCheckIn.check_out_time && (
+                            <div className="mt-4 p-3 bg-muted rounded-lg flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                    Total time today: {(() => {
+                                        const checkIn = new Date(`2000-01-01 ${lastCheckIn.check_in_time}`);
+                                        const checkOut = new Date(`2000-01-01 ${lastCheckIn.check_out_time}`);
+                                        const diff = Math.abs(checkOut.getTime() - checkIn.getTime());
+                                        const hours = Math.floor(diff / 3600000);
+                                        const minutes = Math.floor((diff % 3600000) / 60000);
+                                        return `${hours}h ${minutes}m`;
+                                    })()}
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* Membership Status Card */}
                 <Card className="border-2">

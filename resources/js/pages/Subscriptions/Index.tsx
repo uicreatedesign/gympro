@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Subscription, Member, Plan, Auth } from '@/types';
+import { Subscription, Member, Plan, Trainer, Auth } from '@/types';
 import SubscriptionTable from '@/components/subscriptions/subscription-table';
 import CreateSubscriptionModal from '@/components/subscriptions/create-subscription-modal';
 import EditSubscriptionModal from '@/components/subscriptions/edit-subscription-modal';
@@ -25,11 +25,12 @@ interface Props {
     subscriptions: PaginatedData;
     members: Member[];
     plans: Plan[];
+    trainers: Trainer[];
     filters: { search: string; per_page: number };
     auth: Auth;
 }
 
-export default function Index({ subscriptions, members, plans, filters, auth }: Props) {
+export default function Index({ subscriptions, members, plans, trainers, filters, auth }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
     const [editSubscription, setEditSubscription] = useState<Subscription | null>(null);
     const [deleteSubscription, setDeleteSubscription] = useState<Subscription | null>(null);
@@ -173,6 +174,7 @@ export default function Index({ subscriptions, members, plans, filters, auth }: 
                     onOpenChange={setCreateOpen}
                     members={members}
                     plans={plans}
+                    trainers={trainers}
                 />
             )}
 

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subscription;
 use App\Models\Member;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -15,7 +17,12 @@ class MemberController extends Controller
         }
 
         return Inertia::render('Members/Index', [
-            'members' => Member::with('user')->latest()->paginate(10),
+            'members' => Member::with(['user', 'subscriptions' => function($q) {
+                $q->where('status', 'active')
+                  ->where('end_date', '>=', now())
+                  ->with('plan')
+                  ->latest();
+            }])->latest()->paginate(10),
         ]);
     }
 

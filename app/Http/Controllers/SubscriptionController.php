@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Subscription;
 use App\Models\Member;
 use App\Models\Plan;
+use App\Models\Trainer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -41,6 +42,7 @@ class SubscriptionController extends Controller
             'subscriptions' => $query->paginate($perPage)->withQueryString(),
             'members' => fn() => Member::with('user')->where('status', 'active')->get(),
             'plans' => fn() => Plan::where('status', 'active')->get(),
+            'trainers' => fn() => Trainer::with('user')->where('status', 'active')->get(),
             'filters' => ['search' => $search, 'per_page' => $perPage],
         ]);
     }
@@ -96,6 +98,7 @@ class SubscriptionController extends Controller
         $validated = $request->validate([
             'member_id' => 'required|exists:members,id',
             'plan_id' => 'required|exists:plans,id',
+            'trainer_id' => 'nullable|exists:trainers,id',
             'start_date' => 'required|date',
             'status' => 'required|in:pending,active,expired,cancelled',
             'notes' => 'nullable|string',

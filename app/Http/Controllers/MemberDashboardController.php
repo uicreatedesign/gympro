@@ -72,7 +72,7 @@ class MemberDashboardController extends Controller
         }
 
         return Inertia::render('member/Dashboard', [
-            'member' => $member,
+            'member' => $member->load('user'),
             'currentSubscription' => $currentSubscription,
             'daysRemaining' => $daysRemaining,
             'subscriptionStatus' => $subscriptionStatus,

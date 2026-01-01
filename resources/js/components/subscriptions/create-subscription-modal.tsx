@@ -8,21 +8,23 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Member, Plan } from '@/types';
+import { Member, Plan, Trainer } from '@/types';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     members: Member[];
     plans: Plan[];
+    trainers: Trainer[];
 }
 
-export default function CreateSubscriptionModal({ open, onOpenChange, members, plans }: Props) {
+export default function CreateSubscriptionModal({ open, onOpenChange, members, plans, trainers }: Props) {
     const [recordPayment, setRecordPayment] = useState(false);
     
     const { data, setData, post, processing, errors, reset } = useForm({
         member_id: '',
         plan_id: '',
+        trainer_id: '',
         start_date: new Date().toISOString().split('T')[0],
         status: 'pending' as 'pending' | 'active' | 'expired' | 'cancelled',
         notes: '',
@@ -52,13 +54,13 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add New Subscription</DialogTitle>
                     <DialogDescription>Assign a plan to a member</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit}>
-                    <div className="grid grid-cols-2 gap-4 py-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="member_id">Member *</Label>
                             <Select value={data.member_id} onValueChange={(value) => setData('member_id', value)}>
@@ -98,6 +100,25 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                             </Select>
                             {errors.plan_id && <p className="text-sm text-destructive">{errors.plan_id}</p>}
                         </div>
+
+                        {selectedPlan?.personal_training && (
+                            <div className="space-y-2">
+                                <Label htmlFor="trainer_id">Assign Trainer</Label>
+                                <Select value={data.trainer_id} onValueChange={(value) => setData('trainer_id', value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select trainer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {trainers.map((trainer) => (
+                                            <SelectItem key={trainer.id} value={trainer.id.toString()}>
+                                                {trainer.user?.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.trainer_id && <p className="text-sm text-destructive">{errors.trainer_id}</p>}
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="start_date">Start Date *</Label>
