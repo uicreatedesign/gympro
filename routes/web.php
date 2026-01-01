@@ -28,6 +28,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('member/dashboard', [MemberDashboardController::class, 'index'])->name('member.dashboard');
     Route::get('member/attendance', [MemberDashboardController::class, 'attendance'])->name('member.attendance');
     Route::get('member/plans', [MemberPlanController::class, 'index'])->name('member.plans');
+    Route::get('member/plans/{plan}/checkout', [\App\Http\Controllers\PhonePePaymentController::class, 'checkout'])->name('member.plans.checkout');
+    Route::get('member/plans/{plan}/pay', [\App\Http\Controllers\PhonePePaymentController::class, 'initiatePayment'])->name('member.plans.pay');
+    Route::any('phonepe/callback/{orderId}', [\App\Http\Controllers\PhonePePaymentController::class, 'callback'])->name('phonepe.callback');
 
     Route::resource('members', MemberController::class)->except(['show', 'create', 'edit']);
     Route::resource('plans', PlanController::class)->except(['show', 'create', 'edit']);
@@ -44,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
     
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
     
     Route::middleware('can:view_roles')->group(function () {
         Route::get('roles', [RoleController::class, 'index'])->name('roles.index');

@@ -18,21 +18,75 @@ class AttendanceController extends Controller
 
         $validated = $request->validate([
             'date' => 'nullable|date',
+            'month' => 'nullable|date_format:Y-m',
         ]);
 
-        $date = $validated['date'] ?? Carbon::today()->toDateString();
+        $date = $validated['date'] ?? null;
+        $month = $validated['month'] ?? null;
+        
+        if ($month) {
+            $year = Carbon::parse($month)->year;
+            $monthNum = Carbon::parse($month)->month;
+            $daysInMonth = Carbon::parse($month)->daysInMonth;
+            
+            $attendances = Attendance::with('member.user')
+                ->whereYear('date', $year)
+                ->whereMonth('date', $monthNum)
+                ->get()
+                ->groupBy('member_id');
+            
+            $members = Member::with('user')->where('status', 'active')->get();
+            
+            $monthlyData = $members->map(function ($member) use ($attendances, $year, $monthNum, $daysInMonth) {
+                $memberAttendances = $attendances->get($member->id, collect());
+                $dates = [];
+                
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $dateString = Carbon::create($year, $monthNum, $day)->toDateString();
+                    $isPresent = $memberAttendances->contains(function ($attendance) use ($dateString) {
+                        return Carbon::parse($attendance->date)->toDateString() === $dateString;
+                    });
+                    $dates[$day] = $isPresent ? 'present' : 'absent';
+                }
+                
+                return [
+                    'member' => $member,
+                    'dates' => $dates,
+                    'total_present' => collect($dates)->filter(fn($v) => $v === 'present')->count(),
+                ];
+            });
+            
+            return Inertia::render('Attendances/Index', [
+                'attendances' => [],
+                'monthlyData' => $monthlyData,
+                'daysInMonth' => $daysInMonth,
+                'members' => fn() => Member::with('user')->where('status', 'active')->get(),
+                'stats' => [
+                    'today_count' => Attendance::whereDate('date', Carbon::today())->count(),
+                    'checked_in' => Attendance::whereDate('date', Carbon::today())->whereNull('check_out_time')->count(),
+                ],
+                'selectedDate' => null,
+                'selectedMonth' => $month,
+            ]);
+        }
+        
+        $date = $date ?? Carbon::today()->toDateString();
+        $attendances = Attendance::with('member.user')
+            ->whereDate('date', $date)
+            ->latest('check_in_time')
+            ->get();
         
         return Inertia::render('Attendances/Index', [
-            'attendances' => Attendance::with('member')
-                ->whereDate('date', $date)
-                ->latest('check_in_time')
-                ->get(),
-            'members' => fn() => Member::where('status', 'active')->get(),
+            'attendances' => $attendances,
+            'monthlyData' => null,
+            'daysInMonth' => null,
+            'members' => fn() => Member::with('user')->where('status', 'active')->get(),
             'stats' => [
-                'today_count' => Attendance::whereDate('date', $date)->count(),
-                'checked_in' => Attendance::whereDate('date', $date)->whereNull('check_out_time')->count(),
+                'today_count' => Attendance::whereDate('date', Carbon::today())->count(),
+                'checked_in' => Attendance::whereDate('date', Carbon::today())->whereNull('check_out_time')->count(),
             ],
             'selectedDate' => $date,
+            'selectedMonth' => null,
         ]);
     }
 
@@ -123,6 +177,15 @@ class AttendanceController extends Controller
             'check_in_time' => 'required',
             'notes' => 'nullable|string',
         ]);
+
+        // Check if attendance already exists for this member on this date
+        $existing = Attendance::where('member_id', $validated['member_id'])
+            ->whereDate('date', $validated['date'])
+            ->first();
+
+        if ($existing) {
+            return redirect()->back()->withErrors(['member_id' => 'Attendance already recorded for this member on this date']);
+        }
 
         $validated['check_in_time'] = Carbon::parse($validated['check_in_time'])->format('H:i:s');
 

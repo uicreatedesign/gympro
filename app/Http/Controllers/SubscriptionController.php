@@ -25,10 +25,10 @@ class SubscriptionController extends Controller
         $search = $validated['search'] ?? null;
         $perPage = $validated['per_page'] ?? 10;
 
-        $query = Subscription::with(['member', 'plan', 'payments'])
+        $query = Subscription::with(['member.user', 'plan', 'payments'])
             ->when($search, function ($q) use ($search) {
                 $sanitized = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
-                $q->whereHas('member', function ($query) use ($sanitized) {
+                $q->whereHas('member.user', function ($query) use ($sanitized) {
                     $query->where('name', 'like', "%{$sanitized}%")
                           ->orWhere('email', 'like', "%{$sanitized}%");
                 })->orWhereHas('plan', function ($query) use ($sanitized) {
@@ -39,7 +39,7 @@ class SubscriptionController extends Controller
 
         return Inertia::render('Subscriptions/Index', [
             'subscriptions' => $query->paginate($perPage)->withQueryString(),
-            'members' => fn() => Member::where('status', 'active')->get(),
+            'members' => fn() => Member::with('user')->where('status', 'active')->get(),
             'plans' => fn() => Plan::where('status', 'active')->get(),
             'filters' => ['search' => $search, 'per_page' => $perPage],
         ]);

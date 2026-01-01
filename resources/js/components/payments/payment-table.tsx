@@ -34,9 +34,9 @@ export default function PaymentTable({ payments, onEdit, onDelete }: Props) {
                     <TableRow key={payment.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">{payment.invoice_number}</TableCell>
-                        <TableCell>{payment.member?.name}</TableCell>
+                        <TableCell>{payment.member?.user?.name}</TableCell>
                         <TableCell>₹{payment.amount}</TableCell>
-                        <TableCell>{payment.payment_method}</TableCell>
+                        <TableCell className="capitalize">{payment.payment_method}</TableCell>
                         <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
                         <TableCell>
                             <Badge 

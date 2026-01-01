@@ -68,7 +68,7 @@ export default function CreateSubscriptionModal({ open, onOpenChange, members, p
                                 <SelectContent>
                                     {members.map((member) => (
                                         <SelectItem key={member.id} value={member.id.toString()}>
-                                            {member.name}
+                                            {member.user?.name || 'Unknown'}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

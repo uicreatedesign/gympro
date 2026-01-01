@@ -35,6 +35,7 @@ class MemberPlanController extends Controller
             'plans' => $plans,
             'activeSubscription' => $activeSubscription,
             'member' => $member,
+            'phonepeEnabled' => \App\Models\Setting::get('phonepe_enabled', '0') === '1',
         ]);
     }
 }

@@ -39,9 +39,10 @@ interface Props {
     plans: Plan[];
     activeSubscription: Subscription | null;
     member: Member;
+    phonepeEnabled: boolean;
 }
 
-export default function Plans({ plans, activeSubscription, member }: Props) {
+export default function Plans({ plans, activeSubscription, member, phonepeEnabled }: Props) {
     const monthlyPlans = plans.filter(p => p.duration_months <= 3);
     const yearlyPlans = plans.filter(p => p.duration_months > 3);
 
@@ -100,8 +101,12 @@ export default function Plans({ plans, activeSubscription, member }: Props) {
                     )}
                 </CardContent>
                 <CardFooter>
-                    <Button className="w-full" disabled>
-                        {isActive ? 'Current Plan' : 'Contact Admin to Purchase'}
+                    <Button 
+                        className="w-full" 
+                        disabled={isActive || !phonepeEnabled}
+                        onClick={() => window.location.href = `/member/plans/${plan.id}/checkout`}
+                    >
+                        {isActive ? 'Current Plan' : phonepeEnabled ? 'Buy Now' : 'Payment Disabled'}
                     </Button>
                 </CardFooter>
             </Card>

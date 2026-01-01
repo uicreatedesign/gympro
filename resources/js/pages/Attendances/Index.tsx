@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Attendance, Member } from '@/types';
 import AttendanceTable from '@/components/attendances/attendance-table';
+import MonthlyAttendanceGrid from '@/components/attendances/monthly-attendance-grid';
 import CheckInModal from '@/components/attendances/check-in-modal';
 import CheckOutModal from '@/components/attendances/check-out-modal';
 import EditAttendanceModal from '@/components/attendances/edit-attendance-modal';
 import DeleteAttendanceDialog from '@/components/attendances/delete-attendance-dialog';
-import { UserCheck, Users } from 'lucide-react';
+import { UserCheck, Users, Calendar } from 'lucide-react';
 
 interface Props {
     attendances: Attendance[];
@@ -18,18 +22,36 @@ interface Props {
         today_count: number;
         checked_in: number;
     };
+    selectedDate: string | null;
+    selectedMonth: string | null;
+    monthlyData: any[] | null;
+    daysInMonth: number | null;
 }
 
-export default function Index({ attendances, members, stats }: Props) {
+export default function Index({ attendances, members, stats, selectedDate, selectedMonth, monthlyData, daysInMonth }: Props) {
     const { auth } = usePage().props as any;
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [checkOutAttendance, setCheckOutAttendance] = useState<Attendance | null>(null);
     const [editAttendance, setEditAttendance] = useState<Attendance | null>(null);
     const [deleteAttendance, setDeleteAttendance] = useState<Attendance | null>(null);
+    const [customDate, setCustomDate] = useState(selectedDate || new Date().toISOString().split('T')[0]);
+    const [customMonth, setCustomMonth] = useState(selectedMonth || new Date().toISOString().slice(0, 7));
+    const [activeTab, setActiveTab] = useState(selectedMonth ? 'monthly' : selectedDate ? 'custom' : 'today');
 
     const canCreate = auth.permissions.includes('create_attendances');
     const canEdit = auth.permissions.includes('edit_attendances');
     const canDelete = auth.permissions.includes('delete_attendances');
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        if (value === 'today') {
+            router.get('/attendances', {}, { preserveState: true });
+        }
+    };
+
+    const handleDateChange = () => {
+        router.get('/attendances', { date: customDate }, { preserveState: true });
+    };
 
     return (
         <AppLayout>
@@ -75,16 +97,90 @@ export default function Index({ attendances, members, stats }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Today's Attendance</CardTitle>
-                        <CardDescription>Members who checked in today</CardDescription>
+                        <CardTitle>Attendance Records</CardTitle>
+                        <CardDescription>View and manage member attendance</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <AttendanceTable 
-                            attendances={attendances} 
-                            onCheckOut={canEdit ? setCheckOutAttendance : undefined}
-                            onEdit={canEdit ? setEditAttendance : undefined}
-                            onDelete={canDelete ? setDeleteAttendance : undefined}
-                        />
+                        <Tabs value={activeTab} onValueChange={handleTabChange}>
+                            <TabsList className="mb-4">
+                                <TabsTrigger value="today">Today</TabsTrigger>
+                                <TabsTrigger value="custom">Custom Date</TabsTrigger>
+                                <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="today" className="space-y-4">
+                                <AttendanceTable 
+                                    attendances={attendances} 
+                                    onCheckOut={canEdit ? setCheckOutAttendance : undefined}
+                                    onEdit={canEdit ? setEditAttendance : undefined}
+                                    onDelete={canDelete ? setDeleteAttendance : undefined}
+                                />
+                                {attendances.length === 0 && (
+                                    <div className="text-center py-12">
+                                        <UserCheck className="mx-auto h-12 w-12 text-muted-foreground" />
+                                        <h3 className="mt-4 text-lg font-semibold">No attendance records</h3>
+                                        <p className="mt-2 text-sm text-muted-foreground">No members have checked in today</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                            
+                            <TabsContent value="custom" className="space-y-4">
+                                <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                        <Label htmlFor="date">Select Date</Label>
+                                        <Input
+                                            id="date"
+                                            type="date"
+                                            value={customDate}
+                                            onChange={(e) => {
+                                                setCustomDate(e.target.value);
+                                                router.get('/attendances', { date: e.target.value }, { preserveState: true });
+                                            }}
+                                            max={new Date().toISOString().split('T')[0]}
+                                        />
+                                    </div>
+                                </div>
+                                <AttendanceTable 
+                                    attendances={attendances} 
+                                    onCheckOut={canEdit ? setCheckOutAttendance : undefined}
+                                    onEdit={canEdit ? setEditAttendance : undefined}
+                                    onDelete={canDelete ? setDeleteAttendance : undefined}
+                                />
+                                {attendances.length === 0 && (
+                                    <div className="text-center py-12">
+                                        <UserCheck className="mx-auto h-12 w-12 text-muted-foreground" />
+                                        <h3 className="mt-4 text-lg font-semibold">No attendance records</h3>
+                                        <p className="mt-2 text-sm text-muted-foreground">No members checked in on this date</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                            <TabsContent value="monthly" className="space-y-4">
+                                <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                        <Label htmlFor="month">Select Month</Label>
+                                        <Input
+                                            id="month"
+                                            type="month"
+                                            value={customMonth}
+                                            onChange={(e) => {
+                                                setCustomMonth(e.target.value);
+                                                router.get('/attendances', { month: e.target.value }, { preserveState: true });
+                                            }}
+                                            max={new Date().toISOString().slice(0, 7)}
+                                        />
+                                    </div>
+                                </div>
+                                {monthlyData && daysInMonth ? (
+                                    <MonthlyAttendanceGrid data={monthlyData} daysInMonth={daysInMonth} />
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <UserCheck className="mx-auto h-12 w-12 text-muted-foreground" />
+                                        <h3 className="mt-4 text-lg font-semibold">Select a month</h3>
+                                        <p className="mt-2 text-sm text-muted-foreground">Choose a month to view attendance</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                        </Tabs>
                     </CardContent>
                 </Card>
             </div>

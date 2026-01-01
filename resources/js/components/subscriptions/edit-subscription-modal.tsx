@@ -73,7 +73,7 @@ export default function EditSubscriptionModal({ open, onOpenChange, subscription
                                 <SelectContent>
                                     {members.map((member) => (
                                         <SelectItem key={member.id} value={member.id.toString()}>
-                                            {member.name}
+                                            {member.user?.name || 'Unknown'}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

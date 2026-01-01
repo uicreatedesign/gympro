@@ -66,7 +66,7 @@ export default function EditAttendanceModal({ open, onOpenChange, attendance, me
                                 <SelectContent>
                                     {members.map((member) => (
                                         <SelectItem key={member.id} value={member.id.toString()}>
-                                            {member.name}
+                                            {member.user?.name || 'Unknown'}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

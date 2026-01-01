@@ -3,10 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Eye } from 'lucide-react';
 
 interface Props {
     members: Member[];
+    onView?: (member: Member) => void;
     onEdit?: (member: Member) => void;
     onDelete?: (member: Member) => void;
 }
@@ -17,7 +18,7 @@ const statusColors = {
     expired: 'bg-red-500',
 };
 
-export default function MemberTable({ members, onEdit, onDelete }: Props) {
+export default function MemberTable({ members, onView, onEdit, onDelete }: Props) {
     const getInitials = (name: string) => {
         return name
             .split(' ')
@@ -38,7 +39,7 @@ export default function MemberTable({ members, onEdit, onDelete }: Props) {
                     <TableHead>Gender</TableHead>
                     <TableHead>Join Date</TableHead>
                     <TableHead>Status</TableHead>
-                    {(onEdit || onDelete) && <TableHead className="text-right">Actions</TableHead>}
+                    {(onView || onEdit || onDelete) && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -77,9 +78,14 @@ export default function MemberTable({ members, onEdit, onDelete }: Props) {
                                 {member.status}
                             </Badge>
                         </TableCell>
-                        {(onEdit || onDelete) && (
+                        {(onView || onEdit || onDelete) && (
                             <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
+                                    {onView && (
+                                        <Button variant="outline" size="sm" onClick={() => onView(member)}>
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                     {onEdit && (
                                         <Button variant="outline" size="sm" onClick={() => onEdit(member)}>
                                             <Pencil className="h-4 w-4" />

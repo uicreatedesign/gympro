@@ -35,7 +35,7 @@ export default function AttendanceTable({ attendances, onCheckOut, onEdit, onDel
                     attendances.map((attendance, index) => (
                         <TableRow key={attendance.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                             <TableCell>{index + 1}</TableCell>
-                            <TableCell className="font-medium">{attendance.member?.name}</TableCell>
+                            <TableCell className="font-medium">{attendance.member?.user?.name || 'Unknown'}</TableCell>
                             <TableCell>{attendance.check_in_time}</TableCell>
                             <TableCell>{attendance.check_out_time || '-'}</TableCell>
                             <TableCell>

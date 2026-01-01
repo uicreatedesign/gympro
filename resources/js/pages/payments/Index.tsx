@@ -66,7 +66,7 @@ export default function Index({ payments, subscriptions, filters }: Props) {
                 </div>
 
                 <Card>
-                    <CardContent className="p-0 space-y-4">
+                    <CardContent className="p-6">
                         <PaymentTable 
                             payments={payments.data}
                             onEdit={canEdit ? setEditPayment : undefined}

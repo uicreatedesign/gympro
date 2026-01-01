@@ -42,11 +42,11 @@ export default function SubscriptionTable({ subscriptions, onEdit, onDelete }: P
                 {subscriptions.map((subscription, index) => (
                     <TableRow key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell>{index + 1}</TableCell>
-                        <TableCell className="font-medium">{subscription.member?.name}</TableCell>
+                        <TableCell className="font-medium">{subscription.member?.user?.name}</TableCell>
                         <TableCell>{subscription.plan?.name}</TableCell>
                         <TableCell>{new Date(subscription.start_date).toLocaleDateString()}</TableCell>
                         <TableCell>{new Date(subscription.end_date).toLocaleDateString()}</TableCell>
-                        <TableCell>₹{subscription.amount_paid}</TableCell>
+                        <TableCell>₹{subscription.total_paid}</TableCell>
                         <TableCell>
                             <Badge 
                                 variant="outline" 
