@@ -44,6 +44,8 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'create_payments', 'description' => 'Create new payments'],
             ['name' => 'edit_payments', 'description' => 'Edit existing payments'],
             ['name' => 'delete_payments', 'description' => 'Delete payments'],
+            ['name' => 'view_settings', 'description' => 'View settings'],
+            ['name' => 'edit_settings', 'description' => 'Edit settings'],
             ['name' => 'view_reports', 'description' => 'View reports and analytics'],
             ['name' => 'view_member_dashboard', 'description' => 'Access member dashboard'],
         ];
