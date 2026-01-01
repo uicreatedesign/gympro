@@ -9,6 +9,7 @@ import { edit as editPassword } from '@/routes/user-password';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
+import { useHasPermission } from '@/hooks/use-permissions';
 
 const sidebarNavItems: NavItem[] = [
     {
