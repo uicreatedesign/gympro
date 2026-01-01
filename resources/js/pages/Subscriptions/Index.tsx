@@ -99,13 +99,7 @@ export default function Index({ subscriptions, members, plans, filters, auth }: 
 
                 <Card>
                     <CardContent className="p-6 space-y-4">
-                        <div className="flex gap-4">
-                            <Input
-                                placeholder="Search by member or plan..."
-                                value={search}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                className="max-w-sm"
-                            />
+                        <div className="flex justify-between gap-4">
                             <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
                                 <SelectTrigger className="w-32">
                                     <SelectValue />
@@ -117,6 +111,12 @@ export default function Index({ subscriptions, members, plans, filters, auth }: 
                                     <SelectItem value="100">100</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <Input
+                                placeholder="Search by member or plan..."
+                                value={search}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                className="max-w-sm"
+                            />
                         </div>
 
                         <SubscriptionTable 

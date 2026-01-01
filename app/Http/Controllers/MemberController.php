@@ -27,7 +27,7 @@ class MemberController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:members,email',
+            'email' => 'required|email|unique:users,email',
             'phone' => 'required|string',
             'gender' => 'required|in:male,female,other',
             'date_of_birth' => 'required|date',
@@ -35,28 +35,31 @@ class MemberController extends Controller
             'join_date' => 'required|date',
             'status' => 'required|in:active,inactive,expired',
             'notes' => 'nullable|string',
-            'create_login' => 'nullable|boolean',
-            'password' => 'required_if:create_login,true|nullable|string|min:8',
+            'password' => 'required|string|min:8',
         ]);
 
-        $member = Member::create($validated);
+        $user = \App\Models\User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => \Hash::make($validated['password']),
+            'status' => 'active',
+        ]);
 
-        // Create user account if requested
-        if ($request->create_login && $request->password) {
-            $user = \App\Models\User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => \Hash::make($request->password),
-                'status' => 'active',
-            ]);
-
-            $memberRole = \App\Models\Role::where('name', 'Member')->first();
-            if ($memberRole) {
-                $user->roles()->attach($memberRole->id);
-            }
-
-            $member->update(['user_id' => $user->id]);
+        $memberRole = \App\Models\Role::where('name', 'Member')->first();
+        if ($memberRole) {
+            $user->roles()->attach($memberRole->id);
         }
+
+        $member = Member::create([
+            'user_id' => $user->id,
+            'gender' => $validated['gender'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'address' => $validated['address'],
+            'join_date' => $validated['join_date'],
+            'status' => $validated['status'],
+            'notes' => $validated['notes'],
+        ]);
 
         return redirect()->back()->with('success', 'Member created successfully');
     }
@@ -69,7 +72,7 @@ class MemberController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:members,email,' . $member->id,
+            'email' => 'required|email|unique:users,email,' . $member->user_id,
             'phone' => 'required|string',
             'gender' => 'required|in:male,female,other',
             'date_of_birth' => 'required|date',
@@ -79,7 +82,20 @@ class MemberController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $member->update($validated);
+        $member->user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+        ]);
+
+        $member->update([
+            'gender' => $validated['gender'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'address' => $validated['address'],
+            'join_date' => $validated['join_date'],
+            'status' => $validated['status'],
+            'notes' => $validated['notes'],
+        ]);
 
         return redirect()->back()->with('success', 'Member updated successfully');
     }

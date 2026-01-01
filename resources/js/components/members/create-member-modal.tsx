@@ -157,26 +157,25 @@ export default function CreateMemberModal({ open, onOpenChange }: Props) {
                                     id="create_login"
                                     checked={data.create_login}
                                     onCheckedChange={(checked) => setData('create_login', checked as boolean)}
+                                    disabled
                                 />
                                 <Label htmlFor="create_login" className="cursor-pointer">
-                                    Create login account for this member
+                                    Create login account for this member (Always enabled)
                                 </Label>
                             </div>
                         </div>
 
-                        {data.create_login && (
-                            <div className="space-y-2 col-span-2">
-                                <Label htmlFor="password">Password *</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    placeholder="Enter password for member login"
-                                />
-                                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                            </div>
-                        )}
+                        <div className="space-y-2 col-span-2">
+                            <Label htmlFor="password">Password *</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder="Enter password for member login"
+                            />
+                            {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                        </div>}
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -17,9 +17,9 @@ interface Props {
 
 export default function EditMemberModal({ open, onOpenChange, member }: Props) {
     const { data, setData, put, processing, errors } = useForm({
-        name: member.name,
-        email: member.email,
-        phone: member.phone,
+        name: member.user?.name || '',
+        email: member.user?.email || '',
+        phone: member.user?.phone || '',
         gender: member.gender,
         date_of_birth: member.date_of_birth,
         address: member.address || '',
@@ -30,9 +30,9 @@ export default function EditMemberModal({ open, onOpenChange, member }: Props) {
 
     useEffect(() => {
         setData({
-            name: member.name,
-            email: member.email,
-            phone: member.phone,
+            name: member.user?.name || '',
+            email: member.user?.email || '',
+            phone: member.user?.phone || '',
             gender: member.gender,
             date_of_birth: member.date_of_birth,
             address: member.address || '',

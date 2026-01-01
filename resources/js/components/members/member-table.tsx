@@ -2,6 +2,7 @@ import { Member } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
@@ -17,6 +18,15 @@ const statusColors = {
 };
 
 export default function MemberTable({ members, onEdit, onDelete }: Props) {
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
     return (
         <Table>
             <TableHeader>
@@ -35,9 +45,22 @@ export default function MemberTable({ members, onEdit, onDelete }: Props) {
                 {members.map((member, index) => (
                     <TableRow key={member.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell>{index + 1}</TableCell>
-                        <TableCell className="font-medium">{member.name}</TableCell>
-                        <TableCell>{member.email}</TableCell>
-                        <TableCell>{member.phone}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage 
+                                        src={member.user?.profile_image ? `/storage/${member.user.profile_image}` : undefined} 
+                                        alt={member.user?.name} 
+                                    />
+                                    <AvatarFallback className="text-xs">
+                                        {getInitials(member.user?.name || '')}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium">{member.user?.name}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell>{member.user?.email}</TableCell>
+                        <TableCell>{member.user?.phone}</TableCell>
                         <TableCell className="capitalize">{member.gender}</TableCell>
                         <TableCell>{new Date(member.join_date).toLocaleDateString()}</TableCell>
                         <TableCell>

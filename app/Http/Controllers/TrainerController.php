@@ -18,11 +18,28 @@ class TrainerController extends Controller
 
         $validated = $request->validate([
             'per_page' => 'nullable|integer|min:1|max:100',
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         $perPage = $validated['per_page'] ?? 10;
+        $search = $validated['search'] ?? null;
+        $status = $validated['status'] ?? null;
 
-        $trainers = Trainer::with('user')->latest()->paginate($perPage)->withQueryString();
+        $query = Trainer::with('user');
+
+        if ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })->orWhere('specialization', 'like', "%{$search}%");
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $trainers = $query->latest()->paginate($perPage)->withQueryString();
 
         return Inertia::render('trainers/Index', [
             'trainers' => $trainers,
@@ -31,7 +48,11 @@ class TrainerController extends Controller
                 'active' => Trainer::where('status', 'active')->count(),
                 'inactive' => Trainer::where('status', 'inactive')->count(),
             ],
-            'filters' => ['per_page' => $perPage],
+            'filters' => [
+                'per_page' => $perPage,
+                'search' => $search,
+                'status' => $status,
+            ],
         ]);
     }
 

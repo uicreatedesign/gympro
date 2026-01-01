@@ -12,6 +12,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Redirect members to their dashboard
+        if (auth()->user()->isMember() && !auth()->user()->isAdmin()) {
+            return redirect()->route('member.dashboard');
+        }
+        
         $stats = [
             'total_members' => Member::count(),
             'active_members' => Member::where('status', 'active')->count(),

@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
         'profile_image',
         'status',
     ];
@@ -73,5 +74,30 @@ class User extends Authenticatable
     public function can($ability, $arguments = []): bool
     {
         return $this->hasPermission($ability) || parent::can($ability, $arguments);
+    }
+
+    public function member()
+    {
+        return $this->hasOne(Member::class);
+    }
+
+    public function trainer()
+    {
+        return $this->hasOne(Trainer::class);
+    }
+
+    public function isMember(): bool
+    {
+        return $this->roles()->where('name', 'Member')->exists();
+    }
+
+    public function isTrainer(): bool
+    {
+        return $this->roles()->where('name', 'Trainer')->exists();
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->roles()->whereIn('name', ['Admin', 'Manager'])->exists();
     }
 }

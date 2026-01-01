@@ -62,9 +62,7 @@ export interface Role {
 
 export interface Member {
     id: number;
-    name: string;
-    email: string;
-    phone: string;
+    user_id: number;
     gender: 'male' | 'female' | 'other';
     date_of_birth: string;
     address: string | null;
@@ -72,6 +70,7 @@ export interface Member {
     join_date: string;
     status: 'active' | 'inactive' | 'expired';
     notes: string | null;
+    user?: User;
     created_at: string;
     updated_at: string;
 }

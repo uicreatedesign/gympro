@@ -2,6 +2,7 @@ import { Trainer } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
@@ -11,6 +12,15 @@ interface Props {
 }
 
 export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
     return (
         <Table>
             <TableHeader>
@@ -30,7 +40,20 @@ export default function TrainerTable({ trainers, onEdit, onDelete }: Props) {
                 {trainers.map((trainer, index) => (
                     <TableRow key={trainer.id} className="hover:bg-gray-50 dark:hover:bg-[oklch(0.269_0_0)]">
                         <TableCell>{index + 1}</TableCell>
-                        <TableCell className="font-medium">{trainer.user?.name}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage 
+                                        src={trainer.user?.profile_image ? `/storage/${trainer.user.profile_image}` : undefined} 
+                                        alt={trainer.user?.name} 
+                                    />
+                                    <AvatarFallback className="text-xs">
+                                        {getInitials(trainer.user?.name || '')}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium">{trainer.user?.name}</span>
+                            </div>
+                        </TableCell>
                         <TableCell>{trainer.user?.email}</TableCell>
                         <TableCell>{trainer.specialization}</TableCell>
                         <TableCell>{trainer.experience_years} years</TableCell>
