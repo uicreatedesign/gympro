@@ -20,7 +20,7 @@ class ExpenseController extends Controller
             $query->where('title', 'like', "%{$request->search}%");
         }
 
-        if ($request->category) {
+        if ($request->category && $request->category !== 'all') {
             $query->where('category', $request->category);
         }
 
@@ -30,7 +30,11 @@ class ExpenseController extends Controller
 
         return Inertia::render('Expenses/Index', [
             'expenses' => $expenses,
-            'filters' => $request->only(['search', 'category']),
+            'filters' => [
+                'search' => $request->search,
+                'category' => $request->category,
+                'per_page' => (int) ($request->per_page ?? 10),
+            ],
         ]);
     }
 

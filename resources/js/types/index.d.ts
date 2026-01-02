@@ -165,3 +165,18 @@ export interface Expense {
     created_at: string;
     updated_at: string;
 }
+
+export interface Equipment {
+    id: number;
+    name: string;
+    category: string;
+    photo: string | null;
+    quantity: number;
+    purchase_price: string;
+    purchase_date: string;
+    condition: 'excellent' | 'good' | 'fair' | 'poor';
+    status: 'active' | 'maintenance' | 'retired';
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}

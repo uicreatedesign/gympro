@@ -48,6 +48,10 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'create_expenses', 'description' => 'Create new expenses'],
             ['name' => 'edit_expenses', 'description' => 'Edit existing expenses'],
             ['name' => 'delete_expenses', 'description' => 'Delete expenses'],
+            ['name' => 'view_equipment', 'description' => 'View equipment list'],
+            ['name' => 'create_equipment', 'description' => 'Create new equipment'],
+            ['name' => 'edit_equipment', 'description' => 'Edit existing equipment'],
+            ['name' => 'delete_equipment', 'description' => 'Delete equipment'],
             ['name' => 'view_settings', 'description' => 'View settings'],
             ['name' => 'edit_settings', 'description' => 'Edit settings'],
             ['name' => 'view_reports', 'description' => 'View reports and analytics'],
@@ -72,7 +76,7 @@ class RolePermissionSeeder extends Seeder
             ['description' => 'Limited management access']
         );
         $manager->permissions()->sync(
-            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'create_members', 'edit_members', 'view_plans', 'create_plans', 'edit_plans', 'view_subscriptions', 'create_subscriptions', 'edit_subscriptions', 'view_attendances', 'create_attendances', 'edit_attendances', 'view_trainers', 'create_trainers', 'edit_trainers', 'view_payments', 'create_payments', 'edit_payments', 'view_expenses', 'create_expenses', 'edit_expenses', 'view_reports'])->pluck('id')
+            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'create_members', 'edit_members', 'view_plans', 'create_plans', 'edit_plans', 'view_subscriptions', 'create_subscriptions', 'edit_subscriptions', 'view_attendances', 'create_attendances', 'edit_attendances', 'view_trainers', 'create_trainers', 'edit_trainers', 'view_payments', 'create_payments', 'edit_payments', 'view_expenses', 'create_expenses', 'edit_expenses', 'view_equipment', 'create_equipment', 'edit_equipment', 'view_reports'])->pluck('id')
         );
 
         $viewer = Role::firstOrCreate(
@@ -80,7 +84,7 @@ class RolePermissionSeeder extends Seeder
             ['description' => 'Read-only access']
         );
         $viewer->permissions()->sync(
-            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'view_plans', 'view_subscriptions', 'view_attendances', 'view_trainers', 'view_payments', 'view_expenses', 'view_reports'])->pluck('id')
+            Permission::whereIn('name', ['view_users', 'view_roles', 'view_members', 'view_plans', 'view_subscriptions', 'view_attendances', 'view_trainers', 'view_payments', 'view_expenses', 'view_equipment', 'view_reports'])->pluck('id')
         );
 
         Role::firstOrCreate(
