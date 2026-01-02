@@ -53,7 +53,7 @@ export default function Index({ trainers, stats, filters }: Props) {
                 search: search || undefined, 
                 status: status !== 'all' ? status : undefined,
                 per_page: filters.per_page 
-            }, { preserveState: true, preserveScroll: true });
+            }, { preserveState: true, preserveScroll: true, replace: true });
         }, 500);
 
         return () => clearTimeout(timer);
@@ -65,20 +65,20 @@ export default function Index({ trainers, stats, filters }: Props) {
             search: search || undefined, 
             status: value !== 'all' ? value : undefined,
             per_page: filters.per_page 
-        }, { preserveState: true });
+        }, { preserveState: true, replace: true });
     };
 
     const handlePageChange = (page: number) => {
-        router.get('/trainers', { 
+        router.post('/trainers/filter', { 
             page, 
             per_page: filters.per_page,
             search: search || undefined,
             status: status !== 'all' ? status : undefined
-        }, { preserveState: true });
+        }, { preserveState: true, preserveScroll: true });
     };
 
     const handlePerPageChange = (value: string) => {
-        router.get('/trainers', { 
+        router.post('/trainers/filter', { 
             per_page: value,
             search: search || undefined,
             status: status !== 'all' ? status : undefined

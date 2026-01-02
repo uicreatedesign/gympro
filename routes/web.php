@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\MemberPlanController;
@@ -42,9 +43,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('attendances-reports', [AttendanceController::class, 'reports'])->name('attendances.reports');
     Route::get('qr-checkin', fn() => Inertia::render('Attendances/QRCheckIn'))->name('qr-checkin');
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
-    Route::resource('trainers', TrainerController::class)->except(['show', 'create', 'edit']);
+    Route::get('trainers', [TrainerController::class, 'index'])->name('trainers.index');
+    Route::post('trainers', [TrainerController::class, 'store'])->name('trainers.store');
+    Route::post('trainers/filter', [TrainerController::class, 'index']);
+    Route::put('trainers/{trainer}', [TrainerController::class, 'update'])->name('trainers.update');
+    Route::delete('trainers/{trainer}', [TrainerController::class, 'destroy'])->name('trainers.destroy');
     Route::resource('payments', PaymentController::class)->except(['show', 'create', 'edit']);
     Route::get('payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
+    Route::resource('expenses', ExpenseController::class)->except(['show', 'create', 'edit']);
     
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');

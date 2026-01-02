@@ -14,7 +14,7 @@ import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3 } from 'lucide-react';
+import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems = [
@@ -59,6 +59,12 @@ const mainNavItems = [
         href: '/payments',
         icon: Wallet,
         permission: 'view_payments',
+    },
+    {
+        title: 'Expenses',
+        href: '/expenses',
+        icon: Receipt,
+        permission: 'view_expenses',
     },
     {
         title: 'Reports',

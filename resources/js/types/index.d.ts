@@ -152,3 +152,16 @@ export interface Payment {
     created_at: string;
     updated_at: string;
 }
+
+export interface Expense {
+    id: number;
+    title: string;
+    description: string | null;
+    amount: string;
+    category: 'equipment' | 'maintenance' | 'utilities' | 'salaries' | 'rent' | 'marketing' | 'other';
+    expense_date: string;
+    payment_method: 'cash' | 'card' | 'upi' | 'bank_transfer';
+    receipt: string | null;
+    created_at: string;
+    updated_at: string;
+}
