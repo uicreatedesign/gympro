@@ -24,12 +24,12 @@ class PaymentController extends Controller
         $search = $validated['search'] ?? null;
         $perPage = $validated['per_page'] ?? 10;
 
-        $query = Payment::with(['subscription.member', 'subscription.plan'])
+        $query = Payment::with(['subscription.member.user', 'subscription.plan'])
             ->when($search, function ($q) use ($search) {
                 $sanitized = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
                 $q->where('invoice_number', 'like', "%{$sanitized}%")
                   ->orWhere('transaction_id', 'like', "%{$sanitized}%")
-                  ->orWhereHas('subscription.member', function ($query) use ($sanitized) {
+                  ->orWhereHas('subscription.member.user', function ($query) use ($sanitized) {
                       $query->where('name', 'like', "%{$sanitized}%");
                   });
             })
@@ -37,7 +37,7 @@ class PaymentController extends Controller
 
         return Inertia::render('payments/Index', [
             'payments' => $query->paginate($perPage)->withQueryString(),
-            'subscriptions' => fn() => Subscription::with(['member', 'plan'])
+            'subscriptions' => fn() => Subscription::with(['member.user', 'plan'])
                 ->where('status', '!=', 'cancelled')
                 ->get(),
             'filters' => ['search' => $search, 'per_page' => $perPage],
@@ -98,7 +98,7 @@ class PaymentController extends Controller
 
     public function invoice(Payment $payment)
     {
-        $payment->load(['subscription.member', 'subscription.plan']);
+        $payment->load(['subscription.member.user', 'subscription.plan']);
 
         $pdf = Pdf::loadView('invoices.payment', compact('payment'));
         return $pdf->download('invoice-' . $payment->invoice_number . '.pdf');

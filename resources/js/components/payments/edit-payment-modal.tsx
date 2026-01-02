@@ -17,30 +17,32 @@ interface Props {
 
 export default function EditPaymentModal({ open, onOpenChange, payment }: Props) {
     const { data, setData, put, processing, errors } = useForm({
-        member_id: payment.member_id.toString(),
-        subscription_id: payment.subscription_id?.toString() || '',
-        amount: payment.amount,
-        payment_method: payment.payment_method,
-        payment_type: payment.payment_type,
-        payment_date: payment.payment_date.split('T')[0],
-        status: payment.status,
-        notes: payment.notes || '',
-        transaction_id: payment.transaction_id || '',
+        member_id: 'none',
+        subscription_id: 'none',
+        amount: '',
+        payment_method: 'cash',
+        payment_type: 'subscription',
+        payment_date: new Date().toISOString().split('T')[0],
+        status: 'completed',
+        notes: '',
+        transaction_id: '',
     });
 
     useEffect(() => {
-        setData({
-            member_id: payment.member_id.toString(),
-            subscription_id: payment.subscription_id?.toString() || '',
-            amount: payment.amount,
-            payment_method: payment.payment_method,
-            payment_type: payment.payment_type,
-            payment_date: payment.payment_date.split('T')[0],
-            status: payment.status,
-            notes: payment.notes || '',
-            transaction_id: payment.transaction_id || '',
-        });
-    }, [payment]);
+        if (payment && open) {
+            setData({
+                member_id: payment.member_id?.toString() || 'none',
+                subscription_id: payment.subscription_id?.toString() || 'none',
+                amount: payment.amount || '',
+                payment_method: payment.payment_method || 'cash',
+                payment_type: payment.payment_type || 'subscription',
+                payment_date: payment.payment_date ? payment.payment_date.split('T')[0] : new Date().toISOString().split('T')[0],
+                status: payment.status || 'completed',
+                notes: payment.notes || '',
+                transaction_id: payment.transaction_id || '',
+            });
+        }
+    }, [payment, open]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -71,18 +73,18 @@ export default function EditPaymentModal({ open, onOpenChange, payment }: Props)
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value={data.member_id}>{payment.member?.name}</SelectItem>
+                                    <SelectItem value={data.member_id === 'none' ? 'none' : data.member_id}>{payment.member?.name || 'Select Member'}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="subscription_id">Subscription (Optional)</Label>
-                            <Select value={data.subscription_id} onValueChange={(value) => setData('subscription_id', value)}>
+                            <Select value={data.subscription_id || 'none'} onValueChange={(value) => setData('subscription_id', value === 'none' ? '' : value)}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="0">None</SelectItem>
+                                    <SelectItem value="none">None</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -99,13 +101,14 @@ export default function EditPaymentModal({ open, onOpenChange, payment }: Props)
                             <Label htmlFor="payment_method">Payment Method</Label>
                             <Select value={data.payment_method} onValueChange={(value: any) => setData('payment_method', value)}>
                                 <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select payment method" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="cash">Cash</SelectItem>
                                     <SelectItem value="card">Card</SelectItem>
                                     <SelectItem value="upi">UPI</SelectItem>
                                     <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                    <SelectItem value="phonepe">PhonePe</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -113,12 +116,12 @@ export default function EditPaymentModal({ open, onOpenChange, payment }: Props)
                             <Label htmlFor="payment_type">Payment Type</Label>
                             <Select value={data.payment_type} onValueChange={(value: any) => setData('payment_type', value)}>
                                 <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select payment type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="subscription">Subscription</SelectItem>
+                                    <SelectItem value="plan">Plan</SelectItem>
                                     <SelectItem value="admission">Admission</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
+                                    <SelectItem value="renewal">Renewal</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
