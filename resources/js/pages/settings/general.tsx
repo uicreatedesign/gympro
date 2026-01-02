@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { type BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'General Settings',
+        href: '/settings/general',
+    },
+];
 
 interface Props {
     settings: Record<string, string>;
@@ -37,7 +45,7 @@ export default function General({ settings }: Props) {
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="General Settings" />
             
             <SettingsLayout>

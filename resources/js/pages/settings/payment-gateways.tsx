@@ -9,6 +9,14 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { FormEventHandler } from 'react';
+import { type BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Payment Gateways',
+        href: '/settings/payment-gateways',
+    },
+];
 
 interface Props {
     settings: {
@@ -38,7 +46,7 @@ export default function PaymentGateways({ settings }: Props) {
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Payment Gateways" />
             
             <SettingsLayout>

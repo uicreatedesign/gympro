@@ -19,6 +19,12 @@ const sidebarNavItems: NavItem[] = [
         permission: 'view_settings',
     },
     {
+        title: 'Notifications',
+        href: '/settings/notifications',
+        icon: null,
+        permission: 'view_notifications',
+    },
+    {
         title: 'Payment Gateways',
         href: '/settings/payment-gateways',
         icon: null,
@@ -66,11 +72,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="px-4 py-6">
-            <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
-            />
-
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav className="flex flex-col space-y-1 space-x-0">

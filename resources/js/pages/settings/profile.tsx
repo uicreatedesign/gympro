@@ -12,6 +12,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -99,7 +100,9 @@ export default function Profile({
                         description="Update your name and email address"
                     />
 
-                    <form onSubmit={submit} className="space-y-6">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
 
@@ -227,6 +230,8 @@ export default function Profile({
                             )}
                         </div>
                     </form>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <DeleteUser />

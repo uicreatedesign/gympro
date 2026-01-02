@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Settings, Shield, CreditCard } from 'lucide-react';
+import { Settings, Shield, CreditCard, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppLayout from './app-layout';
 
@@ -17,6 +17,12 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             label: 'General Settings',
             icon: Settings,
             permission: 'view_settings',
+        },
+        {
+            href: '/settings/notifications',
+            label: 'Notifications',
+            icon: Bell,
+            permission: 'view_notifications',
         },
         {
             href: '/settings/payment-gateways',
