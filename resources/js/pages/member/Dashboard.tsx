@@ -31,10 +31,11 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
         }, {
             onSuccess: () => {
                 toast.success('Checked in successfully');
-                router.reload();
             },
             onError: () => {
                 toast.error('Failed to check in');
+            },
+            onFinish: () => {
                 setProcessing(false);
             }
         });
@@ -48,10 +49,11 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
         }, {
             onSuccess: () => {
                 toast.success('Checked out successfully');
-                router.reload();
             },
             onError: () => {
                 toast.error('Failed to check out');
+            },
+            onFinish: () => {
                 setProcessing(false);
             }
         });
@@ -82,8 +84,63 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                     </div>
                 </div>
 
-                {/* Check-in/Check-out Card */}
-                <Card className="border-2 border-primary">
+                {/* Check-in & Membership Status - Side by Side */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    {/* Membership Status Card */}
+                    <Card className="border-2">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-xl">Membership Status</CardTitle>
+                                <CardDescription>Your current subscription</CardDescription>
+                            </div>
+                            <Badge className={statusColors[subscriptionStatus]}>
+                                {statusLabels[subscriptionStatus]}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {currentSubscription ? (
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Plan</p>
+                                        <p className="text-lg font-semibold">{currentSubscription.plan?.name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Days Remaining</p>
+                                        <p className="text-lg font-semibold">
+                                            {subscriptionStatus === 'expired' ? 'Expired' : `${daysRemaining} days`}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Start Date</p>
+                                        <p className="text-lg font-semibold">
+                                            {new Date(currentSubscription.start_date).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">End Date</p>
+                                        <p className="text-lg font-semibold">
+                                            {new Date(currentSubscription.end_date).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                </div>
+                                {(subscriptionStatus === 'expiring' || subscriptionStatus === 'expired') && (
+                                    <Button className="w-full">Renew Membership</Button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-muted-foreground mb-4">You don't have an active subscription</p>
+                                <Button>Contact Admin</Button>
+                            </div>
+                        )}
+                    </CardContent>
+                    </Card>
+
+                    {/* Check-in/Check-out Card */}
+                    <Card className="border-2 border-primary">
                     <CardHeader>
                         <CardTitle className="text-xl">Quick Check-in</CardTitle>
                         <CardDescription>Mark your attendance for today</CardDescription>
@@ -141,68 +198,8 @@ export default function Dashboard({ member, currentSubscription, daysRemaining, 
                             </div>
                         )}
                     </CardContent>
-                </Card>
-
-                {/* Membership Status Card */}
-                <Card className="border-2">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="text-2xl">Membership Status</CardTitle>
-                                <CardDescription>Your current subscription details</CardDescription>
-                            </div>
-                            <Badge className={statusColors[subscriptionStatus]}>
-                                {statusLabels[subscriptionStatus]}
-                            </Badge>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {currentSubscription ? (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Plan</p>
-                                        <p className="text-lg font-semibold">{currentSubscription.plan?.name}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Days Remaining</p>
-                                        <p className="text-lg font-semibold">
-                                            {subscriptionStatus === 'expired' ? 'Expired' : `${daysRemaining} days`}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Start Date</p>
-                                        <p className="text-lg font-semibold">
-                                            {new Date(currentSubscription.start_date).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">End Date</p>
-                                        <p className="text-lg font-semibold">
-                                            {new Date(currentSubscription.end_date).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Status</p>
-                                        <p className="text-lg font-semibold capitalize">{currentSubscription.status}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Payment Status</p>
-                                        <p className="text-lg font-semibold capitalize">{currentSubscription.payment_status}</p>
-                                    </div>
-                                </div>
-                                {(subscriptionStatus === 'expiring' || subscriptionStatus === 'expired') && (
-                                    <Button className="w-full">Renew Membership</Button>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="text-center py-8">
-                                <p className="text-muted-foreground mb-4">You don't have an active subscription</p>
-                                <Button>Contact Admin</Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                    </Card>
+                </div>
 
                 {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-2">
