@@ -9,6 +9,7 @@ import PlanTable from '@/components/plans/plan-table';
 import CreatePlanModal from '@/components/plans/create-plan-modal';
 import EditPlanModal from '@/components/plans/edit-plan-modal';
 import DeletePlanDialog from '@/components/plans/delete-plan-dialog';
+import ViewPlanModal from '@/components/plans/view-plan-modal';
 
 interface PaginatedData {
     data: Plan[];
@@ -24,6 +25,7 @@ interface Props {
 
 export default function Index({ plans }: Props) {
     const { auth } = usePage().props as any;
+    const [viewPlan, setViewPlan] = useState<Plan | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [editPlan, setEditPlan] = useState<Plan | null>(null);
     const [deletePlan, setDeletePlan] = useState<Plan | null>(null);
@@ -70,7 +72,8 @@ export default function Index({ plans }: Props) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <PlanTable 
-                            plans={plans.data} 
+                            plans={plans.data}
+                            onView={setViewPlan}
                             onEdit={canEdit ? setEditPlan : undefined}
                             onDelete={canDelete ? setDeletePlan : undefined}
                         />
@@ -94,6 +97,14 @@ export default function Index({ plans }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            {viewPlan && (
+                <ViewPlanModal 
+                    open={!!viewPlan} 
+                    onOpenChange={(open) => !open && setViewPlan(null)}
+                    plan={viewPlan}
+                />
+            )}
 
             {canCreate && (
                 <CreatePlanModal 

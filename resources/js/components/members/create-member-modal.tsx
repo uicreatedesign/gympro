@@ -175,7 +175,7 @@ export default function CreateMemberModal({ open, onOpenChange }: Props) {
                                 placeholder="Enter password for member login"
                             />
                             {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                        </div>}
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

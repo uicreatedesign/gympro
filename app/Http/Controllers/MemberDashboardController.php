@@ -29,7 +29,8 @@ class MemberDashboardController extends Controller
         // Current Subscription with payments
         $currentSubscription = Subscription::with(['plan', 'payments'])
             ->where('member_id', $member->id)
-            ->whereIn('status', ['active', 'pending'])
+            ->where('status', 'active')
+            ->where('end_date', '>=', now())
             ->latest()
             ->first();
 

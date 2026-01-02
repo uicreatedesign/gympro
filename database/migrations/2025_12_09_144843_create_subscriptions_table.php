@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('plan_id')->constrained()->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
-            $table->decimal('amount_paid', 10, 2);
+            $table->decimal('amount_paid', 10, 2)->default(0);
             $table->decimal('admission_fee_paid', 10, 2)->default(0);
             $table->enum('payment_status', ['pending', 'paid', 'overdue'])->default('pending');
             $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');

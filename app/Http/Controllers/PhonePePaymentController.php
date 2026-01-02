@@ -137,6 +137,11 @@ class PhonePePaymentController extends Controller
         $member = Member::with('user')->find($pendingPayment->member_id);
         $plan = Plan::find($pendingPayment->plan_id);
 
+        // Expire old active subscriptions
+        Subscription::where('member_id', $member->id)
+            ->where('status', 'active')
+            ->update(['status' => 'expired']);
+
         $startDate = now();
         $endDate = now()->addMonths($plan->duration_months);
 
@@ -146,18 +151,18 @@ class PhonePePaymentController extends Controller
             'trainer_id' => $request->trainer_id ?? null,
             'start_date' => $startDate,
             'end_date' => $endDate,
-            'amount' => $pendingPayment->amount,
-            'admission_fee' => $plan->admission_fee,
+            'amount_paid' => $pendingPayment->amount,
+            'admission_fee_paid' => $plan->admission_fee,
             'payment_status' => 'paid',
             'status' => 'active',
         ]);
 
         Payment::create([
-            'member_id' => $member->id,
             'subscription_id' => $subscription->id,
             'amount' => $pendingPayment->amount,
             'payment_method' => 'phonepe',
-            'payment_type' => 'subscription',
+            'payment_source' => 'gateway',
+            'payment_type' => 'plan',
             'payment_date' => now(),
             'transaction_id' => $orderId,
             'status' => 'completed',

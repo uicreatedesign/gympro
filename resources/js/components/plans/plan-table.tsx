@@ -2,10 +2,11 @@ import { Plan } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Eye } from 'lucide-react';
 
 interface Props {
     plans: Plan[];
+    onView?: (plan: Plan) => void;
     onEdit?: (plan: Plan) => void;
     onDelete?: (plan: Plan) => void;
 }
@@ -16,7 +17,7 @@ const shiftLabels = {
     full_day: 'Full Day',
 };
 
-export default function PlanTable({ plans, onEdit, onDelete }: Props) {
+export default function PlanTable({ plans, onView, onEdit, onDelete }: Props) {
     return (
         <Table>
             <TableHeader>
@@ -28,7 +29,7 @@ export default function PlanTable({ plans, onEdit, onDelete }: Props) {
                     <TableHead>Shift</TableHead>
                     <TableHead>Features</TableHead>
                     <TableHead>Status</TableHead>
-                    {(onEdit || onDelete) && <TableHead className="text-right">Actions</TableHead>}
+                    {(onView || onEdit || onDelete) && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -71,9 +72,14 @@ export default function PlanTable({ plans, onEdit, onDelete }: Props) {
                                 {plan.status}
                             </Badge>
                         </TableCell>
-                        {(onEdit || onDelete) && (
+                        {(onView || onEdit || onDelete) && (
                             <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
+                                    {onView && (
+                                        <Button variant="outline" size="sm" onClick={() => onView(plan)}>
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                     {onEdit && (
                                         <Button variant="outline" size="sm" onClick={() => onEdit(plan)}>
                                             <Pencil className="h-4 w-4" />
