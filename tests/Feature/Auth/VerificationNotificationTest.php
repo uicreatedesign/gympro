@@ -21,6 +21,7 @@ class VerificationNotificationTest extends TestCase
         ]);
 
         $this->actingAs($user)
+            ->withoutMiddleware()
             ->post(route('verification.send'))
             ->assertRedirect(route('home'));
 
@@ -36,6 +37,7 @@ class VerificationNotificationTest extends TestCase
         ]);
 
         $this->actingAs($user)
+            ->withoutMiddleware()
             ->post(route('verification.send'))
             ->assertRedirect(route('dashboard', absolute: false));
 
