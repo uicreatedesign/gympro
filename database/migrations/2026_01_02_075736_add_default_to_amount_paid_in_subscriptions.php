@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('subscriptions', function (Blueprint $table) {
-            $table->decimal('amount_paid', 10, 2)->default(0)->after('end_date');
-            $table->decimal('admission_fee_paid', 10, 2)->default(0)->after('amount_paid');
-            $table->enum('payment_status', ['pending', 'paid', 'overdue'])->default('pending')->after('admission_fee_paid');
+            if (!Schema::hasColumn('subscriptions', 'amount_paid')) {
+                $table->decimal('amount_paid', 10, 2)->default(0)->after('end_date');
+            }
+            if (!Schema::hasColumn('subscriptions', 'admission_fee_paid')) {
+                $table->decimal('admission_fee_paid', 10, 2)->default(0)->after('amount_paid');
+            }
+            if (!Schema::hasColumn('subscriptions', 'payment_status')) {
+                $table->enum('payment_status', ['pending', 'paid', 'overdue'])->default('pending')->after('admission_fee_paid');
+            }
         });
     }
 
