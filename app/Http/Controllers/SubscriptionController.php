@@ -6,6 +6,7 @@ use App\Models\Subscription;
 use App\Models\Member;
 use App\Models\Plan;
 use App\Models\Trainer;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -71,6 +72,17 @@ class SubscriptionController extends Controller
 
         $validated = $this->validateSubscription($request);
         $subscription = Subscription::create($validated);
+
+        // Create notification
+        NotificationService::create([
+            'type' => 'subscription_created',
+            'title' => 'New Subscription Created',
+            'message' => "Subscription for {$subscription->member->user->name} has been created",
+            'data' => ['subscription_id' => $subscription->id],
+            'user_id' => $subscription->member->user_id,
+            'priority' => 'normal',
+            'color' => '#3b82f6',
+        ]);
 
         // Auto-create payment if payment details provided
         if ($request->filled('payment_amount')) {

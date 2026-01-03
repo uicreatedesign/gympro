@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -78,7 +79,20 @@ class PaymentController extends Controller
         ]);
 
         $validated['payment_source'] = 'manual';
-        Payment::create($validated);
+        $payment = Payment::create($validated);
+
+        // Create notification
+        if ($payment->status === 'completed') {
+            NotificationService::create([
+                'type' => 'payment_received',
+                'title' => 'Payment Received',
+                'message' => "Payment of ₹{$payment->amount} received for {$payment->subscription->member->user->name}",
+                'data' => ['payment_id' => $payment->id],
+                'user_id' => $payment->subscription->member->user_id,
+                'priority' => 'normal',
+                'color' => '#10b981',
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Payment recorded successfully');
     }

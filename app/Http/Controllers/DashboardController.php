@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Member;
 use App\Models\Subscription;
 use App\Models\Payment;
+use App\Models\Attendance;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -40,10 +42,35 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Revenue trend for last 6 months
+        $revenue_trend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $revenue_trend[] = [
+                'month' => $date->format('M Y'),
+                'revenue' => Payment::where('status', 'completed')
+                    ->whereMonth('payment_date', $date->month)
+                    ->whereYear('payment_date', $date->year)
+                    ->sum('amount'),
+            ];
+        }
+
+        // Attendance trend for last 7 days
+        $attendance_trend = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $attendance_trend[] = [
+                'date' => $date->format('M d'),
+                'count' => Attendance::whereDate('date', $date->toDateString())->count(),
+            ];
+        }
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'expiring_soon' => $expiring_soon,
             'recent_subscriptions' => $recent_subscriptions,
+            'revenue_trend' => $revenue_trend,
+            'attendance_trend' => $attendance_trend,
         ]);
     }
 }

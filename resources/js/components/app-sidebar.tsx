@@ -16,7 +16,7 @@ import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings } from 'lucide-react';
+import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings, Bell } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navSections = [
@@ -27,6 +27,12 @@ const navSections = [
                 title: 'Dashboard',
                 href: dashboard(),
                 icon: LayoutGrid,
+                permission: null,
+            },
+            {
+                title: 'Notifications',
+                href: '/notifications',
+                icon: Bell,
                 permission: null,
             },
         ],

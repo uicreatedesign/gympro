@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Subscription;
 use App\Models\Member;
 use App\Models\Plan;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -98,6 +99,16 @@ class MemberController extends Controller
             'join_date' => $validated['join_date'],
             'status' => $validated['status'],
             'notes' => $validated['notes'],
+        ]);
+
+        // Create notification
+        NotificationService::create([
+            'type' => 'member_registered',
+            'title' => 'New Member Registered',
+            'message' => "New member {$validated['name']} has been registered",
+            'data' => ['member_id' => $member->id],
+            'priority' => 'normal',
+            'color' => '#10b981',
         ]);
 
         return redirect()->back()->with('success', 'Member created successfully');
