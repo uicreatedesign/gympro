@@ -20,7 +20,7 @@ import { edit } from '@/routes/profile';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Profile settings',
+        title: 'Profile',
         href: edit().url,
     },
 ];

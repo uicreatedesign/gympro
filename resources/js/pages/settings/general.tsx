@@ -12,7 +12,7 @@ import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'General Settings',
+        title: 'Settings',
         href: '/settings/general',
     },
 ];

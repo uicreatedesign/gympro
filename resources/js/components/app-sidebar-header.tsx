@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UserMenuContent } from '@/components/user-menu-content';
-import { UserInfo } from '@/components/user-info';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/hooks/use-initials';
 import { useEffect, useState } from 'react';
 
 export function AppSidebarHeader({
@@ -18,6 +19,8 @@ export function AppSidebarHeader({
     const { auth } = usePage().props as any;
     const user = auth?.user;
     const [unreadCount, setUnreadCount] = useState(0);
+    const getInitials = useInitials();
+    const avatarUrl = user?.profile_image ? `/storage/${user.profile_image}` : user?.avatar;
 
     useEffect(() => {
         fetch('/api/notifications/unread-count')
@@ -54,8 +57,11 @@ export function AppSidebarHeader({
                 </Link>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="flex items-center gap-2 px-2">
-                            <UserInfo user={user} />
+                        <Button variant="ghost" size="icon">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={avatarUrl} alt={user?.name} />
+                                <AvatarFallback>{getInitials(user?.name || '')}</AvatarFallback>
+                            </Avatar>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="end">
