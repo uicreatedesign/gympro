@@ -1,0 +1,1 @@
+import{e}from"./app-cNXeGScd.js";const c=[["path",{d:"M5 12h14",key:"1ays0h"}],["path",{d:"M12 5v14",key:"s699le"}]],a=e("Plus",c);const o=[["circle",{cx:"11",cy:"11",r:"8",key:"4ej97u"}],["path",{d:"m21 21-4.3-4.3",key:"1qie3q"}]],t=e("Search",o);export{a as P,t as S};
