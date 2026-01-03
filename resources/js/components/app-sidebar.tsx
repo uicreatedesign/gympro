@@ -9,86 +9,113 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarGroup,
+    SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench } from 'lucide-react';
+import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems = [
+const navSections = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-        permission: null,
+        label: 'Overview',
+        items: [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+                permission: null,
+            },
+        ],
     },
     {
-        title: 'Members',
-        href: '/members',
-        icon: Users,
-        permission: 'view_members',
+        label: 'Management',
+        items: [
+            {
+                title: 'Members',
+                href: '/members',
+                icon: Users,
+                permission: 'view_members',
+            },
+            {
+                title: 'Trainers',
+                href: '/trainers',
+                icon: Dumbbell,
+                permission: 'view_trainers',
+            },
+            {
+                title: 'Plans',
+                href: '/plans',
+                icon: CreditCard,
+                permission: 'view_plans',
+            },
+            {
+                title: 'Subscriptions',
+                href: '/subscriptions',
+                icon: Calendar,
+                permission: 'view_subscriptions',
+            },
+        ],
     },
     {
-        title: 'Plans',
-        href: '/plans',
-        icon: CreditCard,
-        permission: 'view_plans',
+        label: 'Operations',
+        items: [
+            {
+                title: 'Attendance',
+                href: '/attendances',
+                icon: UserCheck,
+                permission: 'view_attendances',
+            },
+            {
+                title: 'Equipment',
+                href: '/equipment',
+                icon: Wrench,
+                permission: 'view_equipment',
+            },
+        ],
     },
     {
-        title: 'Subscriptions',
-        href: '/subscriptions',
-        icon: Calendar,
-        permission: 'view_subscriptions',
+        label: 'Finance',
+        items: [
+            {
+                title: 'Payments',
+                href: '/payments',
+                icon: Wallet,
+                permission: 'view_payments',
+            },
+            {
+                title: 'Expenses',
+                href: '/expenses',
+                icon: Receipt,
+                permission: 'view_expenses',
+            },
+        ],
     },
     {
-        title: 'Attendance',
-        href: '/attendances',
-        icon: UserCheck,
-        permission: 'view_attendances',
-    },
-    {
-        title: 'Trainers',
-        href: '/trainers',
-        icon: Dumbbell,
-        permission: 'view_trainers',
-    },
-    {
-        title: 'Payments',
-        href: '/payments',
-        icon: Wallet,
-        permission: 'view_payments',
-    },
-    {
-        title: 'Expenses',
-        href: '/expenses',
-        icon: Receipt,
-        permission: 'view_expenses',
-    },
-    {
-        title: 'Equipment',
-        href: '/equipment',
-        icon: Wrench,
-        permission: 'view_equipment',
-    },
-    {
-        title: 'Reports',
-        href: '/reports',
-        icon: BarChart3,
-        permission: 'view_reports',
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: UserCog,
-        permission: 'view_users',
-    },
-    {
-        title: 'Roles & Permissions',
-        href: '/roles',
-        icon: Shield,
-        permission: 'view_roles',
+        label: 'System',
+        items: [
+            {
+                title: 'Reports',
+                href: '/reports',
+                icon: BarChart3,
+                permission: 'view_reports',
+            },
+            {
+                title: 'Users',
+                href: '/users',
+                icon: UserCog,
+                permission: 'view_users',
+            },
+            {
+                title: 'Roles & Permissions',
+                href: '/roles',
+                icon: Shield,
+                permission: 'view_roles',
+            },
+        ],
     },
 ];
 
@@ -109,11 +136,14 @@ export function AppSidebar() {
     const { auth } = usePage().props as any;
     const userPermissions = auth?.permissions || [];
 
-    // Filter menu items based on permissions
-    const filteredNavItems = mainNavItems.filter(item => {
-        if (!item.permission) return true; // Always show items without permission requirement
-        return userPermissions.includes(item.permission);
-    });
+    // Filter sections and items based on permissions
+    const filteredSections = navSections.map(section => ({
+        ...section,
+        items: section.items.filter(item => {
+            if (!item.permission) return true;
+            return userPermissions.includes(item.permission);
+        }),
+    })).filter(section => section.items.length > 0);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -130,7 +160,12 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={filteredNavItems} />
+                {filteredSections.map((section, index) => (
+                    <SidebarGroup key={index}>
+                        <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+                        <NavMain items={section.items} />
+                    </SidebarGroup>
+                ))}
             </SidebarContent>
 
             <SidebarFooter>
