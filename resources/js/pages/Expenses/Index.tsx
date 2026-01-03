@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import ExpenseTable from '@/components/expenses/expense-table';
 import ExpenseModal from '@/components/expenses/expense-modal';
@@ -118,25 +118,18 @@ export default function Index({ expenses, filters }: Props) {
                             onEdit={canEdit ? setEditExpense : () => {}}
                             onDelete={canDelete ? handleDelete : () => {}}
                         />
+                        {expenses.data.length === 0 && (
+                            <div className="text-center py-12">
+                                <Receipt className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold">No expenses found</h3>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    {search || categoryFilter !== 'all' ? 'Try adjusting your filters' : 'Get started by adding a new expense'}
+                                </p>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="text-sm text-muted-foreground">
-                                    Showing {startItem} to {endItem} of {expenses.total} results
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">Rows per page</span>
-                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
-                                        <SelectTrigger className="w-20">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="10">10</SelectItem>
-                                            <SelectItem value="25">25</SelectItem>
-                                            <SelectItem value="50">50</SelectItem>
-                                            <SelectItem value="100">100</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                            <div className="text-sm text-muted-foreground">
+                                Showing {startItem} to {endItem} of {expenses.total} results
                             </div>
                             <Pagination>
                                 <PaginationContent>

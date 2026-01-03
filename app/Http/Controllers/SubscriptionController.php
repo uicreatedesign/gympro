@@ -21,10 +21,12 @@ class SubscriptionController extends Controller
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
             'per_page' => 'nullable|integer|min:1|max:100',
+            'status' => 'nullable|string',
         ]);
 
         $search = $validated['search'] ?? null;
         $perPage = $validated['per_page'] ?? 10;
+        $status = $validated['status'] ?? null;
 
         $query = Subscription::with(['member.user', 'plan', 'payments'])
             ->when($search, function ($q) use ($search) {
@@ -36,14 +38,28 @@ class SubscriptionController extends Controller
                     $query->where('name', 'like', "%{$sanitized}%");
                 });
             })
+            ->when($status, function ($q) use ($status) {
+                $q->where('status', $status);
+            })
             ->latest();
+
+        $stats = [
+            'total' => Subscription::count(),
+            'active' => Subscription::where('status', 'active')->count(),
+            'expired' => Subscription::where('status', 'expired')->count(),
+        ];
 
         return Inertia::render('Subscriptions/Index', [
             'subscriptions' => $query->paginate($perPage)->withQueryString(),
             'members' => fn() => Member::with('user')->where('status', 'active')->get(),
             'plans' => fn() => Plan::where('status', 'active')->get(),
             'trainers' => fn() => Trainer::with('user')->where('status', 'active')->get(),
-            'filters' => ['search' => $search, 'per_page' => $perPage],
+            'stats' => $stats,
+            'filters' => [
+                'search' => $search,
+                'per_page' => $perPage,
+                'status' => $status,
+            ],
         ]);
     }
 

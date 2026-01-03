@@ -149,34 +149,51 @@ export default function Index({ users, roles, stats, filters }: Props) {
 
                 <Card>
                     <CardContent className="pt-6 space-y-4">
-                        <div className="flex items-center justify-end gap-2">
-                            <div className="relative w-64">
-                                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search users..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-8 h-9"
-                                />
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Show</span>
+                                <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
+                                    <SelectTrigger className="w-20">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <span className="text-sm text-muted-foreground">entries</span>
                             </div>
-                            <Select value={roleFilter} onValueChange={setRoleFilter}>
-                                <SelectTrigger className="w-40 h-9">
-                                    <SelectValue placeholder="Role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Roles</SelectItem>
-                                    {roles.map((role) => (
-                                        <SelectItem key={role.id} value={role.id.toString()}>
-                                            {role.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {(search || roleFilter !== 'all') && (
-                                <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            )}
+                            <div className="flex items-center gap-2">
+                                <div className="relative w-64">
+                                    <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search users..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-8 h-9"
+                                    />
+                                </div>
+                                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                                    <SelectTrigger className="w-40 h-9">
+                                        <SelectValue placeholder="Role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Roles</SelectItem>
+                                        {roles.map((role) => (
+                                            <SelectItem key={role.id} value={role.id.toString()}>
+                                                {role.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {(search || roleFilter !== 'all') && (
+                                    <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                         <UserTable 
                             users={users.data} 
@@ -185,24 +202,8 @@ export default function Index({ users, roles, stats, filters }: Props) {
                             onDelete={canDelete ? setDeleteUser : undefined}
                         />
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="text-sm text-muted-foreground">
-                                    Showing {startItem} to {endItem} of {users.total} results
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">Rows per page</span>
-                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
-                                        <SelectTrigger className="w-20">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="10">10</SelectItem>
-                                            <SelectItem value="25">25</SelectItem>
-                                            <SelectItem value="50">50</SelectItem>
-                                            <SelectItem value="100">100</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                            <div className="text-sm text-muted-foreground">
+                                Showing {startItem} to {endItem} of {users.total} results
                             </div>
                             <Pagination>
                                 <PaginationContent>

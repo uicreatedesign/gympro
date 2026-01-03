@@ -1,4 +1,4 @@
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Member } from '@/types';
+import { ChevronDown } from 'lucide-react';
 
 interface Props {
     open: boolean;
@@ -16,6 +19,9 @@ interface Props {
 }
 
 export default function CheckInModal({ open, onOpenChange, members }: Props) {
+    const [dateOpen, setDateOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    
     const { data, setData, post, processing, errors, reset } = useForm({
         member_id: '',
         date: new Date().toISOString().split('T')[0],
@@ -65,12 +71,33 @@ export default function CheckInModal({ open, onOpenChange, members }: Props) {
 
                         <div className="space-y-2">
                             <Label htmlFor="date">Date *</Label>
-                            <Input
-                                id="date"
-                                type="date"
-                                value={data.date}
-                                onChange={(e) => setData('date', e.target.value)}
-                            />
+                            <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        id="date"
+                                        className="w-full justify-between font-normal"
+                                    >
+                                        {selectedDate.toLocaleDateString()}
+                                        <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={selectedDate}
+                                        captionLayout="dropdown"
+                                        onSelect={(date) => {
+                                            if (date) {
+                                                setSelectedDate(date);
+                                                setData('date', date.toISOString().split('T')[0]);
+                                            }
+                                            setDateOpen(false);
+                                        }}
+                                        disabled={(date) => date > new Date()}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                             {errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
                         </div>
 

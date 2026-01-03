@@ -20,10 +20,16 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
+    return Inertia::render('Landing', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+Route::get('/privacy-policy', fn() => inertia('PrivacyPolicy'));
+Route::get('/terms-of-service', fn() => inertia('TermsOfService'));
+Route::get('/refund-policy', fn() => inertia('RefundPolicy'));
+Route::get('/about', fn() => inertia('About'));
+Route::get('/contact', fn() => inertia('Contact'));
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

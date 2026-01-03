@@ -19,10 +19,12 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
             'per_page' => 'nullable|integer|min:1|max:100',
+            'status' => 'nullable|string',
         ]);
 
         $search = $validated['search'] ?? null;
         $perPage = $validated['per_page'] ?? 10;
+        $status = $validated['status'] ?? null;
 
         $query = Payment::with(['subscription.member.user', 'subscription.plan'])
             ->when($search, function ($q) use ($search) {
@@ -33,14 +35,29 @@ class PaymentController extends Controller
                       $query->where('name', 'like', "%{$sanitized}%");
                   });
             })
+            ->when($status, function ($q) use ($status) {
+                $q->where('status', $status);
+            })
             ->latest();
+
+        $stats = [
+            'total' => Payment::count(),
+            'completed' => Payment::where('status', 'completed')->count(),
+            'pending' => Payment::where('status', 'pending')->count(),
+            'total_amount' => Payment::where('status', 'completed')->sum('amount'),
+        ];
 
         return Inertia::render('payments/Index', [
             'payments' => $query->paginate($perPage)->withQueryString(),
             'subscriptions' => fn() => Subscription::with(['member.user', 'plan'])
                 ->where('status', '!=', 'cancelled')
                 ->get(),
-            'filters' => ['search' => $search, 'per_page' => $perPage],
+            'stats' => $stats,
+            'filters' => [
+                'search' => $search,
+                'per_page' => $perPage,
+                'status' => $status,
+            ],
         ]);
     }
 

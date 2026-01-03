@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Plus, Search } from 'lucide-react';
+import { Dumbbell, CheckCircle, Wrench, Plus, Search, X } from 'lucide-react';
 import EquipmentTable from '@/components/equipment/equipment-table';
 import EquipmentModal from '@/components/equipment/equipment-modal';
 import ViewEquipmentModal from '@/components/equipment/view-equipment-modal';
@@ -22,6 +22,11 @@ interface Props extends PageProps {
         per_page: number;
         total: number;
     };
+    stats: {
+        total: number;
+        active: number;
+        maintenance: number;
+    };
     filters: {
         search?: string;
         status?: string;
@@ -29,14 +34,14 @@ interface Props extends PageProps {
     };
 }
 
-export default function Index({ equipment, filters }: Props) {
+export default function Index({ equipment, stats, filters }: Props) {
     const { auth } = usePage().props as any;
     const [createOpen, setCreateOpen] = useState(false);
     const [editEquipment, setEditEquipment] = useState<Equipment | null>(null);
     const [viewEquipment, setViewEquipment] = useState<Equipment | null>(null);
     const [deleteEquipment, setDeleteEquipment] = useState<Equipment | null>(null);
     const [search, setSearch] = useState(filters.search || '');
-    const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
+    const [status, setStatus] = useState(filters.status || 'all');
     const [debouncedSearch] = useDebounce(search, 500);
 
     const canEdit = auth.permissions.includes('edit_equipment');
@@ -45,21 +50,21 @@ export default function Index({ equipment, filters }: Props) {
     useEffect(() => {
         router.get('/equipment', {
             search: debouncedSearch || undefined,
-            status: statusFilter !== 'all' ? statusFilter : undefined,
+            status: status !== 'all' ? status : undefined,
             per_page: filters.per_page
-        }, { preserveState: true, preserveScroll: true, replace: true });
-    }, [debouncedSearch, statusFilter]);
+        }, { preserveState: true, preserveScroll: true });
+    }, [debouncedSearch, status]);
 
     const handleClearFilters = () => {
         setSearch('');
-        setStatusFilter('all');
+        setStatus('all');
     };
 
     const handlePageChange = (page: number) => {
         router.get('/equipment', {
             page,
             search: search || undefined,
-            status: statusFilter !== 'all' ? statusFilter : undefined,
+            status: status !== 'all' ? status : undefined,
             per_page: filters.per_page
         }, { preserveState: true });
     };
@@ -67,7 +72,7 @@ export default function Index({ equipment, filters }: Props) {
     const handlePerPageChange = (value: string) => {
         router.get('/equipment', {
             search: search || undefined,
-            status: statusFilter !== 'all' ? statusFilter : undefined,
+            status: status !== 'all' ? status : undefined,
             per_page: value
         }, { preserveState: true });
     };
@@ -102,38 +107,100 @@ export default function Index({ equipment, filters }: Props) {
                     </Button>
                 </div>
 
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Equipment</CardTitle>
+                            <Dumbbell className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.total}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Active</CardTitle>
+                            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.active}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Under Maintenance</CardTitle>
+                            <Wrench className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.maintenance}</div>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <Card>
                     <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Show</span>
+                                <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
+                                    <SelectTrigger className="w-20">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <span className="text-sm text-muted-foreground">entries</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="relative w-64">
+                                    <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search equipment..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-8 h-9"
+                                    />
+                                </div>
+                                <Select value={status} onValueChange={setStatus}>
+                                    <SelectTrigger className="w-40 h-9">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                                        <SelectItem value="retired">Retired</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {(search || status !== 'all') && (
+                                    <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
                         <EquipmentTable
                             equipment={equipment.data}
-                            search={search}
-                            statusFilter={statusFilter}
-                            onSearchChange={setSearch}
-                            onStatusChange={setStatusFilter}
-                            onClearFilters={handleClearFilters}
                             onEdit={canEdit ? setEditEquipment : () => {}}
                             onDelete={canDelete ? setDeleteEquipment : () => {}}
                             onView={setViewEquipment}
                         />
+                        {equipment.data.length === 0 && (
+                            <div className="text-center py-12">
+                                <Dumbbell className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold">No equipment found</h3>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    {search || status !== 'all' ? 'Try adjusting your filters' : 'Get started by adding new equipment'}
+                                </p>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="text-sm text-muted-foreground">
-                                    Showing {startItem} to {endItem} of {equipment.total} results
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">Rows per page</span>
-                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
-                                        <SelectTrigger className="w-20">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="10">10</SelectItem>
-                                            <SelectItem value="25">25</SelectItem>
-                                            <SelectItem value="50">50</SelectItem>
-                                            <SelectItem value="100">100</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                            <div className="text-sm text-muted-foreground">
+                                Showing {startItem} to {endItem} of {equipment.total} results
                             </div>
                             <Pagination>
                                 <PaginationContent>

@@ -30,8 +30,15 @@ class EquipmentController extends Controller
             ->paginate($request->per_page ?? 10)
             ->withQueryString();
 
+        $stats = [
+            'total' => Equipment::count(),
+            'active' => Equipment::where('status', 'active')->count(),
+            'maintenance' => Equipment::where('status', 'maintenance')->count(),
+        ];
+
         return Inertia::render('equipment/Index', [
             'equipment' => $equipment,
+            'stats' => $stats,
             'filters' => [
                 'search' => $request->search,
                 'status' => $request->status,

@@ -28,6 +28,14 @@ export default function MemberTable({ members, onView, onEdit, onDelete }: Props
             .slice(0, 2);
     };
 
+    if (!members || members.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <p className="text-muted-foreground">No data available</p>
+            </div>
+        );
+    }
+
     return (
         <Table>
             <TableHeader>

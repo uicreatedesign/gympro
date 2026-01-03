@@ -8,14 +8,42 @@ use Inertia\Inertia;
 
 class PlanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_plans')) {
             abort(403, 'Unauthorized action.');
         }
 
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+        $status = $request->input('status');
+
+        $query = Plan::query();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $plans = $query->latest()->paginate($perPage);
+
+        $stats = [
+            'total' => Plan::count(),
+            'active' => Plan::where('status', 'active')->count(),
+            'inactive' => Plan::where('status', 'inactive')->count(),
+        ];
+
         return Inertia::render('Plans/Index', [
-            'plans' => Plan::latest()->paginate(10),
+            'plans' => $plans,
+            'stats' => $stats,
+            'filters' => [
+                'per_page' => (int) $perPage,
+                'search' => $search,
+                'status' => $status,
+            ],
         ]);
     }
 

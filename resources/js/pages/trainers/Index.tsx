@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { Trainer, PageProps } from '@/types';
@@ -7,7 +8,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Users, UserCheck, UserX, Plus, Search } from 'lucide-react';
+import { Users, UserCheck, UserX, Plus, Search, X } from 'lucide-react';
 import TrainerTable from '@/components/trainers/trainer-table';
 import CreateTrainerModal from '@/components/trainers/create-trainer-modal';
 import EditTrainerModal from '@/components/trainers/edit-trainer-modal';
@@ -42,46 +43,39 @@ export default function Index({ trainers, stats, filters }: Props) {
     const [deleteTrainer, setDeleteTrainer] = useState<Trainer | null>(null);
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'all');
+    const [debouncedSearch] = useDebounce(search, 500);
 
     const canCreate = auth.permissions.includes('create_trainers');
     const canEdit = auth.permissions.includes('edit_trainers');
     const canDelete = auth.permissions.includes('delete_trainers');
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            router.get('/trainers', { 
-                search: search || undefined, 
-                status: status !== 'all' ? status : undefined,
-                per_page: filters.per_page 
-            }, { preserveState: true, preserveScroll: true, replace: true });
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [search]);
-
-    const handleStatusChange = (value: string) => {
-        setStatus(value);
         router.get('/trainers', { 
-            search: search || undefined, 
-            status: value !== 'all' ? value : undefined,
-            per_page: filters.per_page 
-        }, { preserveState: true, replace: true });
+            search: debouncedSearch || undefined, 
+            status: status !== 'all' ? status : undefined,
+            per_page: filters.per_page
+        }, { preserveState: true, preserveScroll: true });
+    }, [debouncedSearch, status]);
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setStatus('all');
     };
 
     const handlePageChange = (page: number) => {
-        router.post('/trainers/filter', { 
+        router.get('/trainers', { 
             page, 
-            per_page: filters.per_page,
             search: search || undefined,
-            status: status !== 'all' ? status : undefined
-        }, { preserveState: true, preserveScroll: true });
+            status: status !== 'all' ? status : undefined,
+            per_page: filters.per_page
+        }, { preserveState: true });
     };
 
     const handlePerPageChange = (value: string) => {
-        router.post('/trainers/filter', { 
-            per_page: value,
+        router.get('/trainers', { 
             search: search || undefined,
-            status: status !== 'all' ? status : undefined
+            status: status !== 'all' ? status : undefined,
+            per_page: value
         }, { preserveState: true });
     };
 
@@ -146,26 +140,48 @@ export default function Index({ trainers, stats, filters }: Props) {
 
                 <Card>
                     <CardContent className="pt-6 space-y-4">
-                        <div className="flex gap-2">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search by name, email, or specialization..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-9"
-                                />
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Show</span>
+                                <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
+                                    <SelectTrigger className="w-20">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <span className="text-sm text-muted-foreground">entries</span>
                             </div>
-                            <Select value={status} onValueChange={handleStatusChange}>
-                                <SelectTrigger className="w-40">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                                <div className="relative w-64">
+                                    <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search trainers..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-8 h-9"
+                                    />
+                                </div>
+                                <Select value={status} onValueChange={setStatus}>
+                                    <SelectTrigger className="w-40 h-9">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {(search || status !== 'all') && (
+                                    <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                         <TrainerTable 
                             trainers={trainers.data}
@@ -182,24 +198,8 @@ export default function Index({ trainers, stats, filters }: Props) {
                             </div>
                         )}
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <div className="text-sm text-muted-foreground hidden">
-                                    Showing {startItem} to {endItem} of {trainers.total} results
-                                </div>
-                                <div className="flex items-center">
-                                    <span className="text-sm text-muted-foreground">Rows per page</span>
-                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
-                                        <SelectTrigger className="w-20">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="10">10</SelectItem>
-                                            <SelectItem value="25">25</SelectItem>
-                                            <SelectItem value="50">50</SelectItem>
-                                            <SelectItem value="100">100</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                            <div className="text-sm text-muted-foreground">
+                                Showing {startItem} to {endItem} of {trainers.total} results
                             </div>
                             <Pagination>
                                 <PaginationContent>

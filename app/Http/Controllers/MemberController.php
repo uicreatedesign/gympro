@@ -10,19 +10,51 @@ use Inertia\Inertia;
 
 class MemberController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_members')) {
             abort(403, 'Unauthorized action.');
         }
 
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+        $status = $request->input('status');
+
+        $query = Member::with(['user', 'subscriptions' => function($q) {
+            $q->where('status', 'active')
+              ->where('end_date', '>=', now())
+              ->with('plan')
+              ->latest();
+        }]);
+
+        if ($search) {
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $members = $query->latest()->paginate($perPage);
+
+        $stats = [
+            'total' => Member::count(),
+            'active' => Member::where('status', 'active')->count(),
+            'inactive' => Member::where('status', 'inactive')->count(),
+        ];
+
         return Inertia::render('Members/Index', [
-            'members' => Member::with(['user', 'subscriptions' => function($q) {
-                $q->where('status', 'active')
-                  ->where('end_date', '>=', now())
-                  ->with('plan')
-                  ->latest();
-            }])->latest()->paginate(10),
+            'members' => $members,
+            'stats' => $stats,
+            'filters' => [
+                'per_page' => (int) $perPage,
+                'search' => $search,
+                'status' => $status,
+            ],
         ]);
     }
 

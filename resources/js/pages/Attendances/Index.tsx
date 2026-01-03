@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Attendance, Member } from '@/types';
 import AttendanceTable from '@/components/attendances/attendance-table';
 import MonthlyAttendanceGrid from '@/components/attendances/monthly-attendance-grid';
@@ -13,7 +15,7 @@ import CheckInModal from '@/components/attendances/check-in-modal';
 import CheckOutModal from '@/components/attendances/check-out-modal';
 import EditAttendanceModal from '@/components/attendances/edit-attendance-modal';
 import DeleteAttendanceDialog from '@/components/attendances/delete-attendance-dialog';
-import { UserCheck, Users, Calendar } from 'lucide-react';
+import { UserCheck, Users, Calendar, ChevronDown } from 'lucide-react';
 
 interface Props {
     attendances: Attendance[];
@@ -34,8 +36,10 @@ export default function Index({ attendances, members, stats, selectedDate, selec
     const [checkOutAttendance, setCheckOutAttendance] = useState<Attendance | null>(null);
     const [editAttendance, setEditAttendance] = useState<Attendance | null>(null);
     const [deleteAttendance, setDeleteAttendance] = useState<Attendance | null>(null);
-    const [customDate, setCustomDate] = useState(selectedDate || new Date().toISOString().split('T')[0]);
-    const [customMonth, setCustomMonth] = useState(selectedMonth || new Date().toISOString().slice(0, 7));
+    const [customDate, setCustomDate] = useState<Date | undefined>(selectedDate ? new Date(selectedDate) : undefined);
+    const [dateOpen, setDateOpen] = useState(false);
+    const [customMonth, setCustomMonth] = useState<Date | undefined>(selectedMonth ? new Date(selectedMonth + '-01') : undefined);
+    const [monthOpen, setMonthOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(selectedMonth ? 'monthly' : selectedDate ? 'custom' : 'today');
 
     const canCreate = auth.permissions.includes('create_attendances');
@@ -126,18 +130,35 @@ export default function Index({ attendances, members, stats, selectedDate, selec
                             
                             <TabsContent value="custom" className="space-y-4">
                                 <div className="flex gap-2 items-end">
-                                    <div className="flex-1">
+                                    <div className="w-64">
                                         <Label htmlFor="date">Select Date</Label>
-                                        <Input
-                                            id="date"
-                                            type="date"
-                                            value={customDate}
-                                            onChange={(e) => {
-                                                setCustomDate(e.target.value);
-                                                router.get('/attendances', { date: e.target.value }, { preserveState: true });
-                                            }}
-                                            max={new Date().toISOString().split('T')[0]}
-                                        />
+                                        <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    id="date"
+                                                    className="w-full justify-between font-normal"
+                                                >
+                                                    {customDate ? customDate.toLocaleDateString() : "Select date"}
+                                                    <ChevronDown className="h-4 w-4" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                                <CalendarComponent
+                                                    mode="single"
+                                                    selected={customDate}
+                                                    captionLayout="dropdown"
+                                                    onSelect={(date) => {
+                                                        setCustomDate(date);
+                                                        setDateOpen(false);
+                                                        if (date) {
+                                                            router.get('/attendances', { date: date.toISOString().split('T')[0] }, { preserveState: true });
+                                                        }
+                                                    }}
+                                                    disabled={(date) => date > new Date()}
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </div>
                                 <AttendanceTable 
@@ -156,18 +177,36 @@ export default function Index({ attendances, members, stats, selectedDate, selec
                             </TabsContent>
                             <TabsContent value="monthly" className="space-y-4">
                                 <div className="flex gap-2 items-end">
-                                    <div className="flex-1">
+                                    <div className="w-64">
                                         <Label htmlFor="month">Select Month</Label>
-                                        <Input
-                                            id="month"
-                                            type="month"
-                                            value={customMonth}
-                                            onChange={(e) => {
-                                                setCustomMonth(e.target.value);
-                                                router.get('/attendances', { month: e.target.value }, { preserveState: true });
-                                            }}
-                                            max={new Date().toISOString().slice(0, 7)}
-                                        />
+                                        <Popover open={monthOpen} onOpenChange={setMonthOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    id="month"
+                                                    className="w-full justify-between font-normal"
+                                                >
+                                                    {customMonth ? customMonth.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : "Select month"}
+                                                    <ChevronDown className="h-4 w-4" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                                <CalendarComponent
+                                                    mode="single"
+                                                    selected={customMonth}
+                                                    captionLayout="dropdown"
+                                                    onSelect={(date) => {
+                                                        setCustomMonth(date);
+                                                        setMonthOpen(false);
+                                                        if (date) {
+                                                            const monthStr = date.toISOString().slice(0, 7);
+                                                            router.get('/attendances', { month: monthStr }, { preserveState: true });
+                                                        }
+                                                    }}
+                                                    disabled={(date) => date > new Date()}
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </div>
                                 {monthlyData && daysInMonth ? (

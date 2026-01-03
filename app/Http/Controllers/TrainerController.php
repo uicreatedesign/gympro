@@ -41,7 +41,7 @@ class TrainerController extends Controller
 
         $trainers = $query->latest()->paginate($perPage)->withQueryString();
 
-        return Inertia::render('trainers/Index', [
+        return Inertia::render('Trainers/Index', [
             'trainers' => $trainers,
             'stats' => [
                 'total' => Trainer::count(),

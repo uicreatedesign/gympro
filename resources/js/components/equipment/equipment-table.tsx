@@ -2,17 +2,10 @@ import { Equipment } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pencil, Trash2, Eye, Search, X, Package } from 'lucide-react';
+import { Pencil, Trash2, Eye, Package } from 'lucide-react';
 
 interface Props {
     equipment: Equipment[];
-    search: string;
-    statusFilter: string;
-    onSearchChange: (value: string) => void;
-    onStatusChange: (value: string) => void;
-    onClearFilters: () => void;
     onEdit: (equipment: Equipment) => void;
     onDelete: (equipment: Equipment) => void;
     onView: (equipment: Equipment) => void;
@@ -31,37 +24,9 @@ const conditionColors: Record<string, string> = {
     poor: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
 };
 
-export default function EquipmentTable({ equipment, search, statusFilter, onSearchChange, onStatusChange, onClearFilters, onEdit, onDelete, onView }: Props) {
+export default function EquipmentTable({ equipment, onEdit, onDelete, onView }: Props) {
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-end gap-2">
-                <div className="relative w-64">
-                    <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        placeholder="Search equipment..."
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="pl-8 h-9"
-                    />
-                </div>
-                <Select value={statusFilter} onValueChange={onStatusChange}>
-                    <SelectTrigger className="w-40 h-9">
-                        <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="maintenance">Maintenance</SelectItem>
-                        <SelectItem value="retired">Retired</SelectItem>
-                    </SelectContent>
-                </Select>
-                {(search || statusFilter !== 'all') && (
-                    <Button variant="ghost" size="sm" onClick={onClearFilters}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                )}
-            </div>
-            <Table>
+        <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>S.No</TableHead>
@@ -117,6 +82,5 @@ export default function EquipmentTable({ equipment, search, statusFilter, onSear
                 ))}
             </TableBody>
         </Table>
-        </div>
     );
 }
