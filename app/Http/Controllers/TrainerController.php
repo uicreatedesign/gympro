@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Trainer;
-use App\Models\User;
+use App\Services\TrainerService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class TrainerController extends Controller
 {
+    public function __construct(
+        private TrainerService $trainerService
+    ) {}
+
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_trainers')) {
@@ -22,37 +25,22 @@ class TrainerController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
-        $perPage = $validated['per_page'] ?? 10;
-        $search = $validated['search'] ?? null;
-        $status = $validated['status'] ?? null;
+        $filters = [
+            'search' => $validated['search'] ?? null,
+            'status' => $validated['status'] ?? null,
+            'per_page' => $validated['per_page'] ?? 10,
+        ];
 
-        $query = Trainer::with('user');
-
-        if ($search) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            })->orWhere('specialization', 'like', "%{$search}%");
-        }
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        $trainers = $query->latest()->paginate($perPage)->withQueryString();
+        $trainers = $this->trainerService->getTrainers($filters);
 
         return Inertia::render('Trainers/Index', [
             'trainers' => $trainers,
             'stats' => [
-                'total' => Trainer::count(),
-                'active' => Trainer::where('status', 'active')->count(),
-                'inactive' => Trainer::where('status', 'inactive')->count(),
+                'total' => \App\Models\Trainer::count(),
+                'active' => \App\Models\Trainer::where('status', 'active')->count(),
+                'inactive' => \App\Models\Trainer::where('status', 'inactive')->count(),
             ],
-            'filters' => [
-                'per_page' => $perPage,
-                'search' => $search,
-                'status' => $status,
-            ],
+            'filters' => $filters,
         ]);
     }
 
@@ -62,40 +50,8 @@ class TrainerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'phone' => 'required|string|max:20',
-            'specialization' => 'required|string|max:255',
-            'experience_years' => 'required|integer|min:0',
-            'salary' => 'required|numeric|min:0',
-            'joining_date' => 'required|date',
-            'bio' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'status' => $validated['status'],
-        ]);
-
-        $trainerRole = \App\Models\Role::where('name', 'Trainer')->first();
-        if ($trainerRole) {
-            $user->roles()->attach($trainerRole->id);
-        }
-
-        Trainer::create([
-            'user_id' => $user->id,
-            'specialization' => $validated['specialization'],
-            'experience_years' => $validated['experience_years'],
-            'salary' => $validated['salary'],
-            'joining_date' => $validated['joining_date'],
-            'bio' => $validated['bio'],
-            'status' => $validated['status'],
-        ]);
+        $validated = $request->validate($this->trainerService->getValidationRules());
+        $this->trainerService->createTrainer($validated);
 
         return redirect()->back()->with('success', 'Trainer created successfully');
     }
@@ -106,36 +62,8 @@ class TrainerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $trainer->user_id,
-            'password' => 'nullable|string|min:8',
-            'specialization' => 'required|string|max:255',
-            'experience_years' => 'required|integer|min:0',
-            'salary' => 'required|numeric|min:0',
-            'joining_date' => 'required|date',
-            'bio' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        $trainer->user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'status' => $validated['status'],
-        ]);
-
-        if (!empty($validated['password'])) {
-            $trainer->user->update(['password' => Hash::make($validated['password'])]);
-        }
-
-        $trainer->update([
-            'specialization' => $validated['specialization'],
-            'experience_years' => $validated['experience_years'],
-            'salary' => $validated['salary'],
-            'joining_date' => $validated['joining_date'],
-            'bio' => $validated['bio'],
-            'status' => $validated['status'],
-        ]);
+        $validated = $request->validate($this->trainerService->getUpdateValidationRules($trainer));
+        $this->trainerService->updateTrainer($trainer, $validated);
 
         return redirect()->back()->with('success', 'Trainer updated successfully');
     }
@@ -146,7 +74,7 @@ class TrainerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $trainer->user->delete();
+        $this->trainerService->deleteTrainer($trainer);
         return redirect()->back()->with('success', 'Trainer deleted successfully');
     }
 }

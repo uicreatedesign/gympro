@@ -6,13 +6,16 @@ use App\Models\Subscription;
 use App\Models\Member;
 use App\Models\Plan;
 use App\Models\Trainer;
-use App\Services\NotificationService;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class SubscriptionController extends Controller
 {
+    public function __construct(
+        private SubscriptionService $subscriptionService
+    ) {}
+
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_subscriptions')) {
@@ -25,42 +28,22 @@ class SubscriptionController extends Controller
             'status' => 'nullable|string',
         ]);
 
-        $search = $validated['search'] ?? null;
-        $perPage = $validated['per_page'] ?? 10;
-        $status = $validated['status'] ?? null;
-
-        $query = Subscription::with(['member.user', 'plan', 'payments'])
-            ->when($search, function ($q) use ($search) {
-                $sanitized = htmlspecialchars($search, ENT_QUOTES, 'UTF-8');
-                $q->whereHas('member.user', function ($query) use ($sanitized) {
-                    $query->where('name', 'like', "%{$sanitized}%")
-                          ->orWhere('email', 'like', "%{$sanitized}%");
-                })->orWhereHas('plan', function ($query) use ($sanitized) {
-                    $query->where('name', 'like', "%{$sanitized}%");
-                });
-            })
-            ->when($status, function ($q) use ($status) {
-                $q->where('status', $status);
-            })
-            ->latest();
-
-        $stats = [
-            'total' => Subscription::count(),
-            'active' => Subscription::where('status', 'active')->count(),
-            'expired' => Subscription::where('status', 'expired')->count(),
+        $filters = [
+            'search' => $validated['search'] ?? null,
+            'per_page' => $validated['per_page'] ?? 10,
+            'status' => $validated['status'] ?? null,
         ];
 
+        $result = $this->subscriptionService->getSubscriptions($filters);
+        $formData = $this->subscriptionService->getFormData();
+
         return Inertia::render('Subscriptions/Index', [
-            'subscriptions' => $query->paginate($perPage)->withQueryString(),
-            'members' => fn() => Member::with('user')->where('status', 'active')->get(),
-            'plans' => fn() => Plan::where('status', 'active')->get(),
-            'trainers' => fn() => Trainer::with('user')->where('status', 'active')->get(),
-            'stats' => $stats,
-            'filters' => [
-                'search' => $search,
-                'per_page' => $perPage,
-                'status' => $status,
-            ],
+            'subscriptions' => $result['subscriptions'],
+            'members' => $formData['members'],
+            'plans' => $formData['plans'],
+            'trainers' => $formData['trainers'],
+            'stats' => $result['stats'],
+            'filters' => $filters,
         ]);
     }
 
@@ -70,31 +53,17 @@ class SubscriptionController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $this->validateSubscription($request);
-        $subscription = Subscription::create($validated);
+        $validated = $request->validate($this->subscriptionService->getValidationRules());
 
-        // Create notification
-        NotificationService::create([
-            'type' => 'subscription_created',
-            'title' => 'New Subscription Created',
-            'message' => "Subscription for {$subscription->member->user->name} has been created",
-            'data' => ['subscription_id' => $subscription->id],
-            'user_id' => $subscription->member->user_id,
-            'priority' => 'normal',
-            'color' => '#3b82f6',
-        ]);
-
-        // Auto-create payment if payment details provided
+        // Add payment details if provided
         if ($request->filled('payment_amount')) {
-            $subscription->payments()->create([
-                'amount' => $request->payment_amount,
-                'payment_method' => $request->payment_method ?? 'cash',
-                'payment_source' => 'manual',
-                'payment_type' => $request->payment_type ?? 'plan',
-                'payment_date' => $request->payment_date ?? now(),
-                'status' => 'completed',
-            ]);
+            $validated['payment_amount'] = $request->payment_amount;
+            $validated['payment_method'] = $request->payment_method ?? 'cash';
+            $validated['payment_type'] = $request->payment_type ?? 'plan';
+            $validated['payment_date'] = $request->payment_date ?? now();
         }
+
+        $this->subscriptionService->createSubscription($validated);
 
         return redirect()->back()->with('success', 'Subscription created successfully');
     }
@@ -105,8 +74,8 @@ class SubscriptionController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $this->validateSubscription($request);
-        $subscription->update($validated);
+        $validated = $request->validate($this->subscriptionService->getValidationRules());
+        $this->subscriptionService->updateSubscription($subscription, $validated);
 
         return redirect()->back()->with('success', 'Subscription updated successfully');
     }
@@ -117,25 +86,7 @@ class SubscriptionController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $subscription->delete();
+        $this->subscriptionService->deleteSubscription($subscription);
         return redirect()->back()->with('success', 'Subscription deleted successfully');
-    }
-
-    private function validateSubscription(Request $request)
-    {
-        $validated = $request->validate([
-            'member_id' => 'required|exists:members,id',
-            'plan_id' => 'required|exists:plans,id',
-            'trainer_id' => 'nullable|exists:trainers,id',
-            'start_date' => 'required|date',
-            'status' => 'required|in:pending,active,expired,cancelled',
-            'notes' => 'nullable|string',
-        ]);
-
-        $plan = Plan::findOrFail($validated['plan_id']);
-        $startDate = Carbon::parse($validated['start_date']);
-        $validated['end_date'] = $startDate->copy()->addMonths($plan->duration_months);
-
-        return $validated;
     }
 }

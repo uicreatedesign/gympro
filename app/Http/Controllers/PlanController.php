@@ -3,47 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Services\PlanService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PlanController extends Controller
 {
+    public function __construct(
+        private PlanService $planService
+    ) {}
+
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_plans')) {
             abort(403, 'Unauthorized action.');
         }
 
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
-        $status = $request->input('status');
-
-        $query = Plan::query();
-
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        $plans = $query->latest()->paginate($perPage);
-
-        $stats = [
-            'total' => Plan::count(),
-            'active' => Plan::where('status', 'active')->count(),
-            'inactive' => Plan::where('status', 'inactive')->count(),
+        $filters = [
+            'search' => $request->input('search'),
+            'status' => $request->input('status'),
+            'per_page' => (int) $request->input('per_page', 10),
         ];
 
+        $result = $this->planService->getPlans($filters);
+
         return Inertia::render('Plans/Index', [
-            'plans' => $plans,
-            'stats' => $stats,
-            'filters' => [
-                'per_page' => (int) $perPage,
-                'search' => $search,
-                'status' => $status,
-            ],
+            'plans' => $result['plans'],
+            'stats' => $result['stats'],
+            'filters' => $filters,
         ]);
     }
 
@@ -53,21 +40,8 @@ class PlanController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'duration_months' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
-            'admission_fee' => 'nullable|numeric|min:0',
-            'shift' => 'required|in:morning,evening,full_day',
-            'shift_time' => 'nullable|string',
-            'personal_training' => 'boolean',
-            'group_classes' => 'boolean',
-            'locker_facility' => 'boolean',
-            'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        Plan::create($validated);
+        $validated = $request->validate($this->planService->getValidationRules());
+        $this->planService->createPlan($validated);
 
         return redirect()->back()->with('success', 'Plan created successfully');
     }
@@ -78,21 +52,8 @@ class PlanController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'duration_months' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
-            'admission_fee' => 'nullable|numeric|min:0',
-            'shift' => 'required|in:morning,evening,full_day',
-            'shift_time' => 'nullable|string',
-            'personal_training' => 'boolean',
-            'group_classes' => 'boolean',
-            'locker_facility' => 'boolean',
-            'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        $plan->update($validated);
+        $validated = $request->validate($this->planService->getValidationRules());
+        $this->planService->updatePlan($plan, $validated);
 
         return redirect()->back()->with('success', 'Plan updated successfully');
     }
@@ -103,7 +64,11 @@ class PlanController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $plan->delete();
+        if (!$this->planService->canDeletePlan($plan)) {
+            return redirect()->back()->withErrors(['plan' => 'Cannot delete plan that has active subscriptions']);
+        }
+
+        $this->planService->deletePlan($plan);
         return redirect()->back()->with('success', 'Plan deleted successfully');
     }
 }

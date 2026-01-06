@@ -3,38 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
+use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ExpenseController extends Controller
 {
+    public function __construct(
+        private ExpenseService $expenseService
+    ) {}
+
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_expenses')) {
             abort(403, 'Unauthorized');
         }
 
-        $query = Expense::query();
+        $filters = [
+            'search' => $request->search,
+            'category' => $request->category !== 'all' ? $request->category : null,
+            'per_page' => (int) ($request->per_page ?? 10),
+        ];
 
-        if ($request->search) {
-            $query->where('title', 'like', "%{$request->search}%");
-        }
-
-        if ($request->category && $request->category !== 'all') {
-            $query->where('category', $request->category);
-        }
-
-        $expenses = $query->orderBy('expense_date', 'desc')
-            ->paginate($request->per_page ?? 10)
-            ->withQueryString();
+        $expenses = $this->expenseService->getExpenses($filters);
 
         return Inertia::render('Expenses/Index', [
             'expenses' => $expenses,
-            'filters' => [
-                'search' => $request->search,
-                'category' => $request->category,
-                'per_page' => (int) ($request->per_page ?? 10),
-            ],
+            'filters' => $filters,
         ]);
     }
 
@@ -44,16 +39,8 @@ class ExpenseController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0',
-            'category' => 'required|in:equipment,maintenance,utilities,salaries,rent,marketing,other',
-            'expense_date' => 'required|date',
-            'payment_method' => 'required|in:cash,card,upi,bank_transfer',
-        ]);
-
-        Expense::create($validated);
+        $validated = $request->validate($this->expenseService->getValidationRules());
+        $this->expenseService->createExpense($validated);
 
         return redirect()->back();
     }
@@ -64,16 +51,8 @@ class ExpenseController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0',
-            'category' => 'required|in:equipment,maintenance,utilities,salaries,rent,marketing,other',
-            'expense_date' => 'required|date',
-            'payment_method' => 'required|in:cash,card,upi,bank_transfer',
-        ]);
-
-        $expense->update($validated);
+        $validated = $request->validate($this->expenseService->getValidationRules());
+        $this->expenseService->updateExpense($expense, $validated);
 
         return redirect()->back();
     }
@@ -84,7 +63,7 @@ class ExpenseController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $expense->delete();
+        $this->expenseService->deleteExpense($expense);
 
         return redirect()->back();
     }

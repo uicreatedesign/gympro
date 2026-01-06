@@ -3,47 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\Equipment;
+use App\Services\EquipmentService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 
 class EquipmentController extends Controller
 {
+    public function __construct(
+        private EquipmentService $equipmentService
+    ) {}
+
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('view_equipment')) {
             abort(403, 'Unauthorized');
         }
 
-        $query = Equipment::query();
-
-        if ($request->search) {
-            $query->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('category', 'like', "%{$request->search}%");
-        }
-
-        if ($request->status && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        $equipment = $query->orderBy('created_at', 'desc')
-            ->paginate($request->per_page ?? 10)
-            ->withQueryString();
-
-        $stats = [
-            'total' => Equipment::count(),
-            'active' => Equipment::where('status', 'active')->count(),
-            'maintenance' => Equipment::where('status', 'maintenance')->count(),
+        $filters = [
+            'search' => $request->search,
+            'status' => $request->status !== 'all' ? $request->status : null,
+            'per_page' => (int) ($request->per_page ?? 10),
         ];
 
+        $result = $this->equipmentService->getEquipment($filters);
+
         return Inertia::render('equipment/Index', [
-            'equipment' => $equipment,
-            'stats' => $stats,
-            'filters' => [
-                'search' => $request->search,
-                'status' => $request->status,
-                'per_page' => (int) ($request->per_page ?? 10),
-            ],
+            'equipment' => $result['equipment'],
+            'stats' => $result['stats'],
+            'filters' => $filters,
         ]);
     }
 
@@ -53,23 +40,14 @@ class EquipmentController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'photo' => 'nullable|image|max:2048',
-            'quantity' => 'required|integer|min:1',
-            'purchase_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|date',
-            'condition' => 'required|in:excellent,good,fair,poor',
-            'status' => 'required|in:active,maintenance,retired',
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validate($this->equipmentService->getValidationRules());
 
+        // Handle file upload
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('equipment', 'public');
+            $validated['photo'] = $request->file('photo');
         }
 
-        Equipment::create($validated);
+        $this->equipmentService->createEquipment($validated);
 
         return redirect()->back();
     }
@@ -80,26 +58,14 @@ class EquipmentController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'photo' => 'nullable|image|max:2048',
-            'quantity' => 'required|integer|min:1',
-            'purchase_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|date',
-            'condition' => 'required|in:excellent,good,fair,poor',
-            'status' => 'required|in:active,maintenance,retired',
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validate($this->equipmentService->getValidationRules());
 
+        // Handle file upload
         if ($request->hasFile('photo')) {
-            if ($equipment->photo) {
-                Storage::disk('public')->delete($equipment->photo);
-            }
-            $validated['photo'] = $request->file('photo')->store('equipment', 'public');
+            $validated['photo'] = $request->file('photo');
         }
 
-        $equipment->update($validated);
+        $this->equipmentService->updateEquipment($equipment, $validated);
 
         return redirect()->back();
     }
@@ -110,11 +76,7 @@ class EquipmentController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        if ($equipment->photo) {
-            Storage::disk('public')->delete($equipment->photo);
-        }
-
-        $equipment->delete();
+        $this->equipmentService->deleteEquipment($equipment);
 
         return redirect()->back();
     }
