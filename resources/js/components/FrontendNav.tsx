@@ -1,13 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
-import { Link } from '@inertiajs/react';
-import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLogo from '../components/app-logo';
 
@@ -17,54 +10,55 @@ interface FrontendNavProps {
 
 export default function FrontendNav({ showAuthButtons = true }: FrontendNavProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { auth } = usePage().props as any;
+    const isAuthenticated = !!auth?.user;
 
     return (
-        <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
-            <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                    <Link href="/">
+        <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+            <div className="container mx-auto px-4 py-3">
+                <div className="flex items-center justify-between gap-4">
+                    <Link href="/" className="flex items-center gap-2 flex-shrink-0">
                         <AppLogo/>
                     </Link>
 
-                    {/* Desktop Navigation */}
-                    <NavigationMenu className="hidden md:flex">
-                        <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <Link href="/about">
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                        About
-                                    </NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuItem>
-                            <NavigationMenuItem>
-                                <Link href="/contact">
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                        Contact
-                                    </NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuItem>
-                        </NavigationMenuList>
-                    </NavigationMenu>
-
-                    {/* Desktop Auth Buttons */}
-                    {showAuthButtons ? (
-                        <div className="hidden md:flex gap-3">
-                            <Link href="/login">
-                                <Button variant="ghost">Login</Button>
+                    {/* Desktop Navigation - Centered */}
+                    <div className="hidden md:flex items-center justify-center flex-1">
+                        <div className="flex items-center gap-1">
+                            <Link href="/" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+                                Home
                             </Link>
-                            <Link href="/register">
-                                <Button>Get Started</Button>
+                            <Link href="/about" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+                                About
+                            </Link>
+                            <Link href="/contact" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+                                Contact
                             </Link>
                         </div>
-                    ) : (
-                        <Link href="/" className="hidden md:block">
-                            <Button variant="ghost" size="sm">Back to Home</Button>
-                        </Link>
+                    </div>
+
+                    {/* Desktop Auth Buttons */}
+                    {showAuthButtons && (
+                        <div className="hidden md:flex gap-2 flex-shrink-0">
+                            {isAuthenticated ? (
+                                <Link href="/dashboard">
+                                    <Button size="sm">Dashboard</Button>
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link href="/login">
+                                        <Button variant="ghost" size="sm">Login</Button>
+                                    </Link>
+                                    <Link href="/register">
+                                        <Button size="sm">Get Started</Button>
+                                    </Link>
+                                </>
+                            )}
+                        </div>
                     )}
 
                     {/* Mobile Menu Button */}
                     <button
-                        className="md:hidden"
+                        className="md:hidden flex-shrink-0"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
                         {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -73,26 +67,33 @@ export default function FrontendNav({ showAuthButtons = true }: FrontendNavProps
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden mt-4 pb-4 space-y-3">
-                        <Link href="/about" className="block py-2 text-sm hover:text-primary">
+                    <div className="md:hidden mt-4 pb-4 space-y-2 border-t pt-4">
+                        <Link href="/" className="block px-4 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+                            Home
+                        </Link>
+                        <Link href="/about" className="block px-4 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200">
                             About
                         </Link>
-                        <Link href="/contact" className="block py-2 text-sm hover:text-primary">
+                        <Link href="/contact" className="block px-4 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200">
                             Contact
                         </Link>
-                        {showAuthButtons ? (
-                            <div className="flex flex-col gap-2 pt-2">
-                                <Link href="/login">
-                                    <Button variant="ghost" className="w-full">Login</Button>
-                                </Link>
-                                <Link href="/register">
-                                    <Button className="w-full">Get Started</Button>
-                                </Link>
+                        {showAuthButtons && (
+                            <div className="flex flex-col gap-2 pt-2 border-t">
+                                {isAuthenticated ? (
+                                    <Link href="/dashboard">
+                                        <Button className="w-full">Dashboard</Button>
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link href="/login">
+                                            <Button variant="ghost" className="w-full">Login</Button>
+                                        </Link>
+                                        <Link href="/register">
+                                            <Button className="w-full">Get Started</Button>
+                                        </Link>
+                                    </>
+                                )}
                             </div>
-                        ) : (
-                            <Link href="/">
-                                <Button variant="ghost" size="sm" className="w-full">Back to Home</Button>
-                            </Link>
                         )}
                     </div>
                 )}

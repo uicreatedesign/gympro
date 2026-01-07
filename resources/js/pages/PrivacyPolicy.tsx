@@ -1,10 +1,19 @@
 import { Link } from '@inertiajs/react';
 import FrontendNav from '@/components/FrontendNav';
+import FrontendFooter from '@/components/FrontendFooter';
 
 export default function PrivacyPolicy() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <FrontendNav showAuthButtons={false} />
+            <FrontendNav />
+
+            {/* Hero Section */}
+            <section className="bg-gradient-to-b from-primary/10 to-transparent py-12 md:py-16">
+                <div className="container mx-auto px-4 text-center">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Privacy Policy</h1>
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Your privacy is important to us. Learn how we protect your data.</p>
+                </div>
+            </section>
 
             <div className="container mx-auto px-4 py-8 md:py-12 max-w-4xl flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">Privacy Policy</h1>
@@ -32,6 +41,8 @@ export default function PrivacyPolicy() {
                     </section>
                 </div>
             </div>
+
+            <FrontendFooter />
         </div>
     );
 }

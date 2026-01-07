@@ -1,10 +1,19 @@
 import { Link } from '@inertiajs/react';
 import FrontendNav from '@/components/FrontendNav';
+import FrontendFooter from '@/components/FrontendFooter';
 
 export default function TermsOfService() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <FrontendNav showAuthButtons={false} />
+            <FrontendNav />
+
+            {/* Hero Section */}
+            <section className="bg-gradient-to-b from-primary/10 to-transparent py-12 md:py-16">
+                <div className="container mx-auto px-4 text-center">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Terms of Service</h1>
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Please read our terms carefully before using our services.</p>
+                </div>
+            </section>
 
             <div className="container mx-auto px-4 py-8 md:py-12 max-w-4xl flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">Terms of Service</h1>
@@ -32,6 +41,8 @@ export default function TermsOfService() {
                     </section>
                 </div>
             </div>
+
+            <FrontendFooter />
         </div>
     );
 }
