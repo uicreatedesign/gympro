@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -27,12 +28,13 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { useAppearance } from '@/hooks/use-appearance';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, Sun, Moon, Monitor } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -68,6 +70,18 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const { appearance, updateAppearance } = useAppearance();
+
+    const getCurrentIcon = () => {
+        switch (appearance) {
+            case 'dark':
+                return <Moon className="h-5 w-5" />;
+            case 'light':
+                return <Sun className="h-5 w-5" />;
+            default:
+                return <Monitor className="h-5 w-5" />;
+        }
+    };
     return (
         <>
             <div className="border-b border-sidebar-border/80">
@@ -226,6 +240,41 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 ))}
                             </div>
                         </div>
+
+                        {/* Theme Switcher */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 rounded-md hover:bg-accent"
+                                >
+                                    {getCurrentIcon()}
+                                    <span className="sr-only">Toggle theme</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => updateAppearance('light')}>
+                                    <span className="flex items-center gap-2">
+                                        <Sun className="h-5 w-5" />
+                                        Light
+                                    </span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateAppearance('dark')}>
+                                    <span className="flex items-center gap-2">
+                                        <Moon className="h-5 w-5" />
+                                        Dark
+                                    </span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateAppearance('system')}>
+                                    <span className="flex items-center gap-2">
+                                        <Monitor className="h-5 w-5" />
+                                        System
+                                    </span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button

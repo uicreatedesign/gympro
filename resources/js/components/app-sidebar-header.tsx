@@ -1,7 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { Bell } from 'lucide-react';
+import { Bell, Maximize, Minimize } from 'lucide-react';
 import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
 import { useEffect, useState } from 'react';
+import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 
 export function AppSidebarHeader({
     breadcrumbs = [],
@@ -19,6 +20,7 @@ export function AppSidebarHeader({
     const { auth } = usePage().props as any;
     const user = auth?.user;
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const getInitials = useInitials();
     const avatarUrl = user?.profile_image ? `/storage/${user.profile_image}` : user?.avatar;
 
@@ -38,6 +40,16 @@ export function AppSidebarHeader({
         return () => clearInterval(interval);
     }, []);
 
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    };
+
     return (
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
             <div className="flex items-center gap-2">
@@ -45,6 +57,10 @@ export function AppSidebarHeader({
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
             <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
+                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                </Button>
+                <AppearanceToggleDropdown className="" />
                 <Link href="/notifications">
                     <Button variant="ghost" size="icon" className="relative">
                         <Bell className="h-5 w-5" />

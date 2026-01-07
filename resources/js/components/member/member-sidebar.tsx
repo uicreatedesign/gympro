@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Calendar, ShoppingCart } from 'lucide-react';
+import { LayoutGrid, Calendar, ShoppingCart, Activity } from 'lucide-react';
 import AppLogo from '../app-logo';
 
 const memberNavItems: NavItem[] = [
@@ -20,6 +20,11 @@ const memberNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/member/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'My Workouts',
+        href: '/member/workouts',
+        icon: Activity,
     },
     {
         title: 'My Attendance',

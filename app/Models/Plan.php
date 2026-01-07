@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Plan extends Model
 {
@@ -27,4 +29,23 @@ class Plan extends Model
         'group_classes' => 'boolean',
         'locker_facility' => 'boolean',
     ];
+
+    /**
+     * Get the exercises assigned to this plan
+     */
+    public function exercises(): BelongsToMany
+    {
+        return $this->belongsToMany(Exercise::class, 'exercise_plan')
+            ->withPivot(['sets', 'reps', 'duration_seconds', 'rest_seconds', 'order', 'notes'])
+            ->orderBy('pivot_order')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get workouts associated with this plan
+     */
+    public function workouts(): HasMany
+    {
+        return $this->hasMany(Workout::class);
+    }
 }

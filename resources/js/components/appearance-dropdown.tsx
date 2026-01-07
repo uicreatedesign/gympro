@@ -10,7 +10,7 @@ import { Monitor, Moon, Sun } from 'lucide-react';
 import { HTMLAttributes } from 'react';
 
 export default function AppearanceToggleDropdown({
-    className = '',
+    className = 'mr-2',
     ...props
 }: HTMLAttributes<HTMLDivElement>) {
     const { appearance, updateAppearance } = useAppearance();
@@ -33,7 +33,7 @@ export default function AppearanceToggleDropdown({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 rounded-md"
+                        className="h-9 w-9 rounded-md hover:bg-accent"
                     >
                         {getCurrentIcon()}
                         <span className="sr-only">Toggle theme</span>

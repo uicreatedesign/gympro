@@ -25,14 +25,14 @@ interface Props {
 const revenueChartConfig = {
     revenue: {
         label: "Revenue",
-        color: "hsl(var(--primary))",
+        color: "hsl(217, 91%, 60%)",
     },
 } satisfies ChartConfig;
 
 const attendanceChartConfig = {
     count: {
         label: "Members",
-        color: "hsl(var(--chart-2))",
+        color: "hsl(217, 91%, 60%)",
     },
 } satisfies ChartConfig;
 
