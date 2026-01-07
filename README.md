@@ -32,6 +32,7 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
 - Advanced search and filtering
 - Pagination with customizable rows per page
 - Admission fee tracking
+- Trainer assignment to subscriptions
 
 #### 4. Attendance Tracking
 - Manual attendance marking
@@ -64,7 +65,23 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
 - Profile image support
 - Pagination with customizable rows per page
 
-#### 8. Roles & Permissions
+#### 8. Equipment Management
+- Track gym equipment inventory
+- Equipment categories and conditions
+- Purchase tracking with dates and prices
+- Photo uploads for equipment
+- Status management (active, maintenance, retired)
+- Quantity tracking
+
+#### 9. Expense Management
+- Record and categorize gym expenses
+- Multiple expense categories
+- Receipt uploads
+- Payment method tracking
+- Date-wise expense filtering
+- Expense reports
+
+#### 10. Roles & Permissions
 - Dynamic role-based access control (RBAC)
 - Granular permission management
 - Pre-defined roles: Admin, Manager, Trainer, Viewer, Member
@@ -77,25 +94,29 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
   - Payments (view, create, edit, delete)
   - Users (view, create, edit, delete)
   - Roles (view, create, edit, delete)
+  - Equipment (view, create, edit, delete)
+  - Expenses (view, create, edit, delete)
   - Settings (view, edit)
   - Reports (view)
 - Scrollable permissions grid in edit modal
 
-#### 9. Dashboard
+#### 11. Dashboard
 - Overview statistics cards
 - Expiring subscriptions alerts
 - Recent subscriptions list
 - Attendance summary
 - Payment analytics
+- Revenue and attendance trend charts
 - Soft-colored status badges
 
-#### 10. Reports
+#### 12. Reports
 - Attendance reports
 - Payment reports
 - Subscription analytics
 - Member statistics
+- Excel export functionality
 
-#### 11. General Settings
+#### 13. General Settings
 - Application configuration:
   - App name (displayed in sidebar logo)
   - App logo upload
@@ -107,15 +128,22 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
 - System preferences:
   - Timezone settings
   - Date format configuration
+- Payment gateway settings:
+  - PhonePe configuration
 - Settings cached for performance (1-hour TTL)
 - Permission-based access control
+
+#### 14. Notification System
+- System notifications
+- Notification settings management
+- Real-time updates
 
 ### Member Portal
 - Dedicated member dashboard
 - View active subscriptions
 - Browse available plans
 - Online plan purchase with PhonePe integration
-- Attendance history
+- Attendance history with calendar view
 - Payment history
 - QR code for check-in
 
@@ -127,6 +155,7 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
 - Session management
 - XSS protection with input sanitization
 - CSRF protection
+- Google OAuth integration
 
 ### UI/UX Features
 - Modern, responsive design
@@ -159,6 +188,7 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
 - **PDF Generation**: DomPDF (for invoices)
 - **Payment Gateway**: PhonePe SDK v2
 - **QR Code**: Bacon QR Code
+- **Excel Export**: Maatwebsite Excel
 
 ### Frontend
 - **Framework**: React 19
@@ -171,6 +201,8 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
 - **Notifications**: Sonner
 - **Date Handling**: date-fns
 - **Theme**: next-themes (dark mode)
+- **Charts**: Recharts
+- **Calendar**: React Day Picker
 
 ## Getting Started
 
@@ -230,35 +262,43 @@ A comprehensive web-based gym management system built with Laravel 12 and React 
    PHONEPE_ENV=UAT
    ```
 
-7. **Run database migrations and seeders:**
+7. **Configure Google OAuth (optional) in `.env`:**
+
+   ```env
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
+   ```
+
+8. **Run database migrations and seeders:**
 
    ```bash
    php artisan migrate --seed
    ```
 
-8. **Build frontend assets:**
+9. **Build frontend assets:**
 
    ```bash
    npm run build
    ```
 
-9. **Start the development server:**
+10. **Start the development server:**
 
-   ```bash
-   # Terminal 1: Laravel server
-   php artisan serve
+    ```bash
+    # Terminal 1: Laravel server
+    php artisan serve
 
-   # Terminal 2: Vite dev server
-   npm run dev
-   ```
+    # Terminal 2: Vite dev server
+    npm run dev
+    ```
 
-   Or use the combined command:
+    Or use the combined command:
 
-   ```bash
-   composer dev
-   ```
+    ```bash
+    composer dev
+    ```
 
-10. **Access the application:**
+11. **Access the application:**
 
     Open your browser and navigate to `http://127.0.0.1:8000`
 
@@ -295,6 +335,11 @@ PHONEPE_MERCHANT_USER_ID=
 PHONEPE_SALT_KEY=
 PHONEPE_SALT_INDEX=1
 PHONEPE_ENV=UAT
+
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
 ```
 
 ### General Settings
@@ -329,7 +374,8 @@ gympro/
 │   └── views/                # Blade templates
 ├── routes/
 │   ├── web.php               # Web routes
-│   └── settings.php          # Settings routes
+│   ├── settings.php          # Settings routes
+│   └── notifications.php     # Notification routes
 └── public/                   # Public assets
 ```
 
@@ -397,6 +443,7 @@ npm run types
 - [Member Sidebar Guide](MEMBER_SIDEBAR_GUIDE.md)
 - [Payment Setup](PAYMENT_SETUP.md)
 - [RBAC Setup](RBAC_SETUP.md)
+- [Mobile App Guide](MOBILE_APP_GUIDE.md)
 
 ## Contributing
 
