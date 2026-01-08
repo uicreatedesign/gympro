@@ -163,6 +163,9 @@ class ReportService
                 ->groupBy('month')
                 ->orderBy('month')
                 ->get(),
+            'recent' => (clone $expenseQuery)->orderBy('expense_date', 'desc')
+                ->limit(10)
+                ->get(),
         ];
     }
 
