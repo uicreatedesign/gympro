@@ -100,21 +100,21 @@ export default function Index({ payments, subscriptions, stats, filters }: Props
         <AppLayout>
             <Head title="Payments" />
             
-            <div className="container mx-auto p-6 space-y-6">
-                <div className="flex items-center justify-between">
+            <div className="container mx-auto p-4 md:p-6 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold">Payments</h1>
-                        <p className="text-muted-foreground">Manage payment records</p>
+                        <h1 className="text-2xl md:text-3xl font-bold">Payments</h1>
+                        <p className="text-sm md:text-base text-muted-foreground">Manage payment records</p>
                     </div>
                     {canCreate && (
-                        <Button onClick={() => setCreateModalOpen(true)}>
+                        <Button onClick={() => setCreateModalOpen(true)} className="w-full md:w-auto">
                             <Plus className="mr-2 h-4 w-4" />
                             Record Payment
                         </Button>
                     )}
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
@@ -155,24 +155,26 @@ export default function Index({ payments, subscriptions, stats, filters }: Props
 
                 <Card>
                     <CardContent className="pt-6 space-y-4">
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Show</span>
-                                <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
-                                    <SelectTrigger className="w-20">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="10">10</SelectItem>
-                                        <SelectItem value="25">25</SelectItem>
-                                        <SelectItem value="50">50</SelectItem>
-                                        <SelectItem value="100">100</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <span className="text-sm text-muted-foreground">entries</span>
+                        <div className="space-y-4">
+                            <div className="flex flex-col md:flex-row md:items-center gap-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground whitespace-nowrap">Show</span>
+                                    <Select value={filters.per_page.toString()} onValueChange={handlePerPageChange}>
+                                        <SelectTrigger className="w-20">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="10">10</SelectItem>
+                                            <SelectItem value="25">25</SelectItem>
+                                            <SelectItem value="50">50</SelectItem>
+                                            <SelectItem value="100">100</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <span className="text-sm text-muted-foreground whitespace-nowrap">entries</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="relative w-64">
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <div className="relative flex-1">
                                     <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         placeholder="Search payments..."
@@ -182,7 +184,7 @@ export default function Index({ payments, subscriptions, stats, filters }: Props
                                     />
                                 </div>
                                 <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="w-40 h-9">
+                                    <SelectTrigger className="w-full sm:w-40 h-9">
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -194,17 +196,19 @@ export default function Index({ payments, subscriptions, stats, filters }: Props
                                     </SelectContent>
                                 </Select>
                                 {(search || status !== 'all') && (
-                                    <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                                    <Button variant="ghost" size="sm" onClick={handleClearFilters} className="w-full sm:w-auto">
                                         <X className="h-4 w-4" />
                                     </Button>
                                 )}
                             </div>
                         </div>
-                        <PaymentTable 
-                            payments={payments.data}
-                            onEdit={canEdit ? setEditPayment : undefined}
-                            onDelete={canDelete ? setDeletePayment : undefined}
-                        />
+                        <div className="overflow-x-auto">
+                            <PaymentTable 
+                                payments={payments.data}
+                                onEdit={canEdit ? setEditPayment : undefined}
+                                onDelete={canDelete ? setDeletePayment : undefined}
+                            />
+                        </div>
                         {payments.data.length === 0 && (
                             <div className="text-center py-12">
                                 <DollarSign className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -214,25 +218,27 @@ export default function Index({ payments, subscriptions, stats, filters }: Props
                                 </p>
                             </div>
                         )}
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
                             <div className="text-sm text-muted-foreground">
                                 Showing {startItem} to {endItem} of {payments.total} results
                             </div>
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious onClick={() => handlePageChange(payments.current_page - 1)} className={payments.current_page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
-                                    </PaginationItem>
-                                    {getPageNumbers().map((page, idx) => (
-                                        <PaginationItem key={idx}>
-                                            {page === '...' ? <PaginationEllipsis /> : <PaginationLink onClick={() => handlePageChange(page as number)} isActive={page === payments.current_page} className="cursor-pointer">{page}</PaginationLink>}
+                            <div className="overflow-x-auto">
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious onClick={() => handlePageChange(payments.current_page - 1)} className={payments.current_page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
                                         </PaginationItem>
-                                    ))}
-                                    <PaginationItem>
-                                        <PaginationNext onClick={() => handlePageChange(payments.current_page + 1)} className={payments.current_page === payments.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
+                                        {getPageNumbers().map((page, idx) => (
+                                            <PaginationItem key={idx}>
+                                                {page === '...' ? <PaginationEllipsis /> : <PaginationLink onClick={() => handlePageChange(page as number)} isActive={page === payments.current_page} className="cursor-pointer">{page}</PaginationLink>}
+                                            </PaginationItem>
+                                        ))}
+                                        <PaginationItem>
+                                            <PaginationNext onClick={() => handlePageChange(payments.current_page + 1)} className={payments.current_page === payments.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'} />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

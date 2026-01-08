@@ -57,12 +57,18 @@ const navSections = [
                 href: '/plans',
                 icon: CreditCard,
                 permission: 'view_plans',
-            },
-            {
-                title: 'Features',
-                href: '/features',
-                icon: Zap,
-                permission: 'view_plans',
+                submenu: [
+                    {
+                        title: 'Manage Plans',
+                        href: '/plans',
+                        permission: 'view_plans',
+                    },
+                    {
+                        title: 'Features',
+                        href: '/features',
+                        permission: 'view_plans',
+                    },
+                ],
             },
             {
                 title: 'Subscriptions',

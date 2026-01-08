@@ -93,7 +93,7 @@ class ReportService
             'active' => Member::where('status', 'active')->count(),
             'inactive' => Member::where('status', 'inactive')->count(),
             'expired' => Member::where('status', 'expired')->count(),
-            'new_this_month' => Member::whereBetween('join_date', [
+            'new' => Member::whereBetween('join_date', [
                 Carbon::now()->startOfMonth(),
                 Carbon::now()->endOfMonth()
             ])->count(),
@@ -122,7 +122,7 @@ class ReportService
                 ->selectRaw('plan_id, COUNT(*) as count')
                 ->groupBy('plan_id')
                 ->get()
-                ->map(fn($s) => ['name' => $s->plan->name ?? 'Unknown', 'count' => $s->count]),
+                ->map(fn($s) => ['name' => $s->plan?->name ?? 'Unknown', 'count' => $s->count]),
             'monthly_trends' => $this->getSubscriptionTrends(),
         ];
     }
@@ -142,7 +142,7 @@ class ReportService
                 ->orderByDesc('count')
                 ->limit(5)
                 ->get()
-                ->map(fn($s) => ['name' => $s->plan->name ?? 'Unknown', 'count' => $s->count]),
+                ->map(fn($s) => ['name' => $s->plan?->name ?? 'Unknown', 'count' => $s->count]),
             'revenue_by_plan' => $this->getRevenueByPlan($startDate, $endDate),
         ];
     }
@@ -185,7 +185,7 @@ class ReportService
     /**
      * Get member age distribution
      */
-    private function getMemberAgeDistribution(): Collection
+    private function getMemberAgeDistribution(): array
     {
         return Member::selectRaw('
                 TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) as age,
@@ -213,7 +213,8 @@ class ReportService
             ->groupBy('age_group')
             ->map(function ($group) {
                 return $group->sum('count');
-            });
+            })
+            ->toArray();
     }
 
     /**

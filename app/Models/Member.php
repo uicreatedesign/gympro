@@ -33,9 +33,4 @@ class Member extends Model
     {
         return $this->hasMany(Subscription::class);
     }
-
-    public function workouts(): HasMany
-    {
-        return $this->hasMany(Workout::class);
-    }
 }
