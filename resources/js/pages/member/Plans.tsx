@@ -14,11 +14,13 @@ interface Plan {
     admission_fee: number;
     shift: string;
     shift_time: string;
-    personal_training: boolean;
-    group_classes: boolean;
-    locker_facility: boolean;
     description: string;
     status: string;
+    features: Array<{
+        id: number;
+        name: string;
+        slug: string;
+    }>;
 }
 
 interface Subscription {
@@ -76,24 +78,12 @@ export default function Plans({ plans, activeSubscription, member, phonepeEnable
                             <Check className="h-4 w-4 text-green-600" />
                             <span>{plan.shift} Shift - {plan.shift_time}</span>
                         </div>
-                        {plan.personal_training && (
-                            <div className="flex items-center gap-2 text-sm">
+                        {plan.features && plan.features.map(feature => (
+                            <div key={feature.id} className="flex items-center gap-2 text-sm">
                                 <Check className="h-4 w-4 text-green-600" />
-                                <span>Personal Training</span>
+                                <span>{feature.name}</span>
                             </div>
-                        )}
-                        {plan.group_classes && (
-                            <div className="flex items-center gap-2 text-sm">
-                                <Check className="h-4 w-4 text-green-600" />
-                                <span>Group Classes</span>
-                            </div>
-                        )}
-                        {plan.locker_facility && (
-                            <div className="flex items-center gap-2 text-sm">
-                                <Check className="h-4 w-4 text-green-600" />
-                                <span>Locker Facility</span>
-                            </div>
-                        )}
+                        ))}
                     </div>
 
                     {plan.description && (

@@ -1,7 +1,7 @@
 import { Plan } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Check, X } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface Props {
     open: boolean;
@@ -61,36 +61,16 @@ export default function ViewPlanModal({ open, onOpenChange, plan }: Props) {
                     <div>
                         <p className="text-sm text-muted-foreground mb-2">Features</p>
                         <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                {plan.personal_training ? (
-                                    <Check className="h-4 w-4 text-green-600" />
-                                ) : (
-                                    <X className="h-4 w-4 text-red-600" />
-                                )}
-                                <span className={plan.personal_training ? '' : 'text-muted-foreground'}>
-                                    Personal Training
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {plan.group_classes ? (
-                                    <Check className="h-4 w-4 text-green-600" />
-                                ) : (
-                                    <X className="h-4 w-4 text-red-600" />
-                                )}
-                                <span className={plan.group_classes ? '' : 'text-muted-foreground'}>
-                                    Group Classes
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {plan.locker_facility ? (
-                                    <Check className="h-4 w-4 text-green-600" />
-                                ) : (
-                                    <X className="h-4 w-4 text-red-600" />
-                                )}
-                                <span className={plan.locker_facility ? '' : 'text-muted-foreground'}>
-                                    Locker Facility
-                                </span>
-                            </div>
+                            {plan.features && plan.features.length > 0 ? (
+                                plan.features.map(feature => (
+                                    <div key={feature.id} className="flex items-center gap-2">
+                                        <Check className="h-4 w-4 text-green-600" />
+                                        <span>{feature.name}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-muted-foreground">No features included</p>
+                            )}
                         </div>
                     </div>
 

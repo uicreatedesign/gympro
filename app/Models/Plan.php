@@ -15,6 +15,9 @@ class Plan extends Model
         'admission_fee',
         'shift',
         'shift_time',
+        'personal_training',
+        'group_classes',
+        'locker_facility',
         'description',
         'status',
     ];

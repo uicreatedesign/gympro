@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Exercise;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,13 @@ class ExerciseSeeder extends Seeder
     public function run(): void
     {
         Exercise::truncate();
+        
+        // Get first user or create one
+        $user = User::first();
+        if (!$user) {
+            $this->command->error('No users found. Please create a user first.');
+            return;
+        }
         
         $jsonUrl = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json';
         
@@ -25,7 +33,7 @@ class ExerciseSeeder extends Seeder
             $count = 0;
             foreach ($selectedExercises as $exercise) {
                 $data = [
-                    'created_by' => 1,
+                    'created_by' => $user->id,
                     'name' => $exercise['name'] ?? 'Unknown',
                     'category' => $exercise['category'] ?? 'General',
                     'muscle_group' => $exercise['target'] ?? 'Full Body',

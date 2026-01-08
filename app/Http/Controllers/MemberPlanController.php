@@ -23,7 +23,7 @@ class MemberPlanController extends Controller
             abort(404, 'Member profile not found. Please contact admin.');
         }
         
-        $plans = Plan::where('status', 'active')->get();
+        $plans = Plan::where('status', 'active')->with('features')->get();
         
         $activeSubscription = Subscription::where('member_id', $member->id)
             ->where('status', 'active')

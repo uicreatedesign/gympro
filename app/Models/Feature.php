@@ -11,7 +11,6 @@ class Feature extends Model
         'name',
         'slug',
         'description',
-        'icon',
         'status',
     ];
 
