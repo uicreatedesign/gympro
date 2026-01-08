@@ -83,11 +83,9 @@ export interface Plan {
     admission_fee: string;
     shift: 'morning' | 'evening' | 'full_day';
     shift_time: string | null;
-    personal_training: boolean;
-    group_classes: boolean;
-    locker_facility: boolean;
     description: string | null;
     status: 'active' | 'inactive';
+    features?: Array<{ id: number; name: string; slug: string }>;
     created_at: string;
     updated_at: string;
 }

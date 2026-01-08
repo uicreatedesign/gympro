@@ -16,7 +16,7 @@ import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings, Bell, Activity, Target } from 'lucide-react';
+import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings, Bell, Zap } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navSections = [
@@ -56,6 +56,12 @@ const navSections = [
                 title: 'Plans',
                 href: '/plans',
                 icon: CreditCard,
+                permission: 'view_plans',
+            },
+            {
+                title: 'Features',
+                href: '/features',
+                icon: Zap,
                 permission: 'view_plans',
             },
             {

@@ -4,6 +4,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\MemberPlanController;
@@ -42,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('members', MemberController::class)->except(['show', 'create', 'edit']);
     Route::resource('plans', PlanController::class)->except(['show', 'create', 'edit']);
+    Route::resource('features', FeatureController::class)->except(['show', 'create', 'edit']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
     Route::resource('attendances', AttendanceController::class)->except(['show', 'create', 'edit']);
     Route::post('attendances/qr-checkin', [AttendanceController::class, 'qrCheckIn'])->name('attendances.qr-checkin')->withoutMiddleware([

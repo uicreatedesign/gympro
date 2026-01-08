@@ -13,7 +13,7 @@ class PlanService
      */
     public function getPlans(array $filters = []): array
     {
-        $query = Plan::query();
+        $query = Plan::with('features');
 
         // Apply search filter
         if (!empty($filters['search'])) {
@@ -43,17 +43,24 @@ class PlanService
     /**
      * Create a new plan
      */
-    public function createPlan(array $data): Plan
+    public function createPlan(array $data, array $features = []): Plan
     {
-        return Plan::create($data);
+        $plan = Plan::create($data);
+        if (!empty($features)) {
+            $plan->features()->sync($features);
+        }
+        return $plan;
     }
 
     /**
      * Update plan
      */
-    public function updatePlan(Plan $plan, array $data): Plan
+    public function updatePlan(Plan $plan, array $data, array $features = []): Plan
     {
         $plan->update($data);
+        if (!empty($features)) {
+            $plan->features()->sync($features);
+        }
         return $plan->fresh();
     }
 
@@ -121,11 +128,6 @@ class PlanService
                 ->groupBy('shift')
                 ->get(),
             'average_price' => Plan::where('status', 'active')->avg('price'),
-            'features_usage' => [
-                'personal_training' => Plan::where('personal_training', true)->count(),
-                'group_classes' => Plan::where('group_classes', true)->count(),
-                'locker_facility' => Plan::where('locker_facility', true)->count(),
-            ],
         ];
     }
 
@@ -141,9 +143,8 @@ class PlanService
             'admission_fee' => 'nullable|numeric|min:0',
             'shift' => 'required|in:morning,evening,full_day',
             'shift_time' => 'nullable|string',
-            'personal_training' => 'boolean',
-            'group_classes' => 'boolean',
-            'locker_facility' => 'boolean',
+            'features' => 'nullable|array',
+            'features.*' => 'integer|exists:features,id',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ];

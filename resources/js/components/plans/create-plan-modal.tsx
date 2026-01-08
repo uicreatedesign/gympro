@@ -9,12 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 
+interface Feature {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    features: Feature[];
 }
 
-export default function CreatePlanModal({ open, onOpenChange }: Props) {
+export default function CreatePlanModal({ open, onOpenChange, features }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         duration_months: 1,
@@ -22,9 +29,7 @@ export default function CreatePlanModal({ open, onOpenChange }: Props) {
         admission_fee: '',
         shift: 'full_day' as 'morning' | 'evening' | 'full_day',
         shift_time: '',
-        personal_training: false,
-        group_classes: true,
-        locker_facility: false,
+        features: [] as number[],
         description: '',
         status: 'active' as 'active' | 'inactive',
     });
@@ -41,6 +46,13 @@ export default function CreatePlanModal({ open, onOpenChange }: Props) {
                 toast.error('Failed to create plan');
             },
         });
+    };
+
+    const toggleFeature = (featureId: number) => {
+        const updated = data.features.includes(featureId)
+            ? data.features.filter(id => id !== featureId)
+            : [...data.features, featureId];
+        setData('features', updated);
     };
 
     return (
@@ -138,38 +150,20 @@ export default function CreatePlanModal({ open, onOpenChange }: Props) {
                         </div>
 
                         <div className="space-y-3 col-span-2">
-                            <Label>Facilities</Label>
-                            <div className="flex gap-6">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="personal_training"
-                                        checked={data.personal_training}
-                                        onCheckedChange={(checked) => setData('personal_training', !!checked)}
-                                    />
-                                    <label htmlFor="personal_training" className="text-sm cursor-pointer">
-                                        Personal Training
-                                    </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="group_classes"
-                                        checked={data.group_classes}
-                                        onCheckedChange={(checked) => setData('group_classes', !!checked)}
-                                    />
-                                    <label htmlFor="group_classes" className="text-sm cursor-pointer">
-                                        Group Classes
-                                    </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="locker_facility"
-                                        checked={data.locker_facility}
-                                        onCheckedChange={(checked) => setData('locker_facility', !!checked)}
-                                    />
-                                    <label htmlFor="locker_facility" className="text-sm cursor-pointer">
-                                        Locker Facility
-                                    </label>
-                                </div>
+                            <Label>Features</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {features.map((feature) => (
+                                    <div key={feature.id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`feature-${feature.id}`}
+                                            checked={data.features.includes(feature.id)}
+                                            onCheckedChange={() => toggleFeature(feature.id)}
+                                        />
+                                        <label htmlFor={`feature-${feature.id}`} className="text-sm cursor-pointer">
+                                            {feature.name}
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 

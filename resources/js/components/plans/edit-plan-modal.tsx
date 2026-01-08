@@ -10,13 +10,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plan } from '@/types';
 
+interface Feature {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    plan: Plan;
+    plan: Plan & { features?: Feature[] };
+    features: Feature[];
 }
 
-export default function EditPlanModal({ open, onOpenChange, plan }: Props) {
+export default function EditPlanModal({ open, onOpenChange, plan, features }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         name: plan.name,
         duration_months: plan.duration_months,
@@ -24,9 +31,7 @@ export default function EditPlanModal({ open, onOpenChange, plan }: Props) {
         admission_fee: plan.admission_fee,
         shift: plan.shift,
         shift_time: plan.shift_time || '',
-        personal_training: plan.personal_training,
-        group_classes: plan.group_classes,
-        locker_facility: plan.locker_facility,
+        features: (plan.features || []).map(f => f.id),
         description: plan.description || '',
         status: plan.status,
     });
@@ -39,9 +44,7 @@ export default function EditPlanModal({ open, onOpenChange, plan }: Props) {
             admission_fee: plan.admission_fee,
             shift: plan.shift,
             shift_time: plan.shift_time || '',
-            personal_training: plan.personal_training,
-            group_classes: plan.group_classes,
-            locker_facility: plan.locker_facility,
+            features: (plan.features || []).map(f => f.id),
             description: plan.description || '',
             status: plan.status,
         });
@@ -58,6 +61,13 @@ export default function EditPlanModal({ open, onOpenChange, plan }: Props) {
                 toast.error('Failed to update plan');
             },
         });
+    };
+
+    const toggleFeature = (featureId: number) => {
+        const updated = data.features.includes(featureId)
+            ? data.features.filter(id => id !== featureId)
+            : [...data.features, featureId];
+        setData('features', updated);
     };
 
     return (
@@ -151,38 +161,20 @@ export default function EditPlanModal({ open, onOpenChange, plan }: Props) {
                         </div>
 
                         <div className="space-y-3 col-span-2">
-                            <Label>Facilities</Label>
-                            <div className="flex gap-6">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="personal_training"
-                                        checked={data.personal_training}
-                                        onCheckedChange={(checked) => setData('personal_training', !!checked)}
-                                    />
-                                    <label htmlFor="personal_training" className="text-sm cursor-pointer">
-                                        Personal Training
-                                    </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="group_classes"
-                                        checked={data.group_classes}
-                                        onCheckedChange={(checked) => setData('group_classes', !!checked)}
-                                    />
-                                    <label htmlFor="group_classes" className="text-sm cursor-pointer">
-                                        Group Classes
-                                    </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="locker_facility"
-                                        checked={data.locker_facility}
-                                        onCheckedChange={(checked) => setData('locker_facility', !!checked)}
-                                    />
-                                    <label htmlFor="locker_facility" className="text-sm cursor-pointer">
-                                        Locker Facility
-                                    </label>
-                                </div>
+                            <Label>Features</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {features.map((feature) => (
+                                    <div key={feature.id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`feature-${feature.id}`}
+                                            checked={data.features.includes(feature.id)}
+                                            onCheckedChange={() => toggleFeature(feature.id)}
+                                        />
+                                        <label htmlFor={`feature-${feature.id}`} className="text-sm cursor-pointer">
+                                            {feature.name}
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 

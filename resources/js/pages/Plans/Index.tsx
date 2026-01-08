@@ -23,6 +23,12 @@ interface PaginatedData {
     total: number;
 }
 
+interface Feature {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Props {
     plans: PaginatedData;
     stats: {
@@ -35,9 +41,10 @@ interface Props {
         search: string | null;
         status: string | null;
     };
+    features: Feature[];
 }
 
-export default function Index({ plans, stats, filters }: Props) {
+export default function Index({ plans, stats, filters, features }: Props) {
     const { auth } = usePage().props as any;
     const [viewPlan, setViewPlan] = useState<Plan | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
@@ -240,6 +247,7 @@ export default function Index({ plans, stats, filters }: Props) {
                 <CreatePlanModal 
                     open={createOpen} 
                     onOpenChange={setCreateOpen}
+                    features={features}
                 />
             )}
 
@@ -248,6 +256,7 @@ export default function Index({ plans, stats, filters }: Props) {
                     open={!!editPlan} 
                     onOpenChange={(open) => !open && setEditPlan(null)}
                     plan={editPlan}
+                    features={features}
                 />
             )}
 

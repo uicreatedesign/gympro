@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Feature;
 use App\Models\Plan;
 use App\Services\PlanService;
 use Illuminate\Http\Request;
@@ -26,11 +27,13 @@ class PlanController extends Controller
         ];
 
         $result = $this->planService->getPlans($filters);
+        $features = Feature::where('status', 'active')->get(['id', 'name', 'slug']);
 
         return Inertia::render('Plans/Index', [
             'plans' => $result['plans'],
             'stats' => $result['stats'],
             'filters' => $filters,
+            'features' => $features,
         ]);
     }
 
@@ -41,7 +44,8 @@ class PlanController extends Controller
         }
 
         $validated = $request->validate($this->planService->getValidationRules());
-        $this->planService->createPlan($validated);
+        $features = $request->input('features', []);
+        $this->planService->createPlan($validated, $features);
 
         return redirect()->back()->with('success', 'Plan created successfully');
     }
@@ -53,7 +57,8 @@ class PlanController extends Controller
         }
 
         $validated = $request->validate($this->planService->getValidationRules());
-        $this->planService->updatePlan($plan, $validated);
+        $features = $request->input('features', []);
+        $this->planService->updatePlan($plan, $validated, $features);
 
         return redirect()->back()->with('success', 'Plan updated successfully');
     }

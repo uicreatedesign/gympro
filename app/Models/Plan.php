@@ -15,9 +15,6 @@ class Plan extends Model
         'admission_fee',
         'shift',
         'shift_time',
-        'personal_training',
-        'group_classes',
-        'locker_facility',
         'description',
         'status',
     ];
@@ -25,27 +22,21 @@ class Plan extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'admission_fee' => 'decimal:2',
-        'personal_training' => 'boolean',
-        'group_classes' => 'boolean',
-        'locker_facility' => 'boolean',
     ];
 
     /**
-     * Get the exercises assigned to this plan
+     * Get features for this plan
      */
-    public function exercises(): BelongsToMany
+    public function features(): BelongsToMany
     {
-        return $this->belongsToMany(Exercise::class, 'exercise_plan')
-            ->withPivot(['sets', 'reps', 'duration_seconds', 'rest_seconds', 'order', 'notes'])
-            ->orderBy('pivot_order')
-            ->withTimestamps();
+        return $this->belongsToMany(Feature::class, 'plan_features');
     }
 
     /**
-     * Get workouts associated with this plan
+     * Get subscriptions for this plan
      */
-    public function workouts(): HasMany
+    public function subscriptions(): HasMany
     {
-        return $this->hasMany(Workout::class);
+        return $this->hasMany(Subscription::class);
     }
 }
