@@ -59,12 +59,6 @@ const navSections = [
                 permission: 'view_plans',
             },
             {
-                title: 'Exercises',
-                href: '/exercises',
-                icon: Target,
-                permission: 'view_exercises',
-            },
-            {
                 title: 'Subscriptions',
                 href: '/subscriptions',
                 icon: Calendar,
@@ -80,12 +74,6 @@ const navSections = [
                 href: '/attendances',
                 icon: UserCheck,
                 permission: 'view_attendances',
-            },
-            {
-                title: 'Workouts',
-                href: '/workouts',
-                icon: Activity,
-                permission: 'view_workouts',
             },
             {
                 title: 'Equipment',

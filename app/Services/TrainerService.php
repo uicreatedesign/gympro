@@ -86,14 +86,16 @@ class TrainerService
         $trainer->user->update($userData);
 
         // Update trainer profile
-        $trainer->update([
-            'specialization' => $data['specialization'],
-            'experience_years' => $data['experience_years'],
-            'salary' => $data['salary'],
-            'joining_date' => $data['joining_date'],
-            'bio' => $data['bio'],
+        $trainerData = [
+            'specialization' => $data['specialization'] ?? $trainer->specialization,
+            'experience_years' => $data['experience_years'] ?? $trainer->experience_years,
+            'salary' => $data['salary'] ?? $trainer->salary,
+            'joining_date' => $data['joining_date'] ?? $trainer->joining_date,
+            'bio' => $data['bio'] ?? $trainer->bio,
             'status' => $data['status'],
-        ]);
+        ];
+
+        $trainer->update($trainerData);
 
         return $trainer->fresh('user');
     }
@@ -182,7 +184,9 @@ class TrainerService
             'phone' => 'nullable|string',
             'specialization' => 'nullable|string|max:255',
             'experience_years' => 'nullable|integer|min:0',
-            'certifications' => 'nullable|string',
+            'salary' => 'nullable|numeric|min:0',
+            'joining_date' => 'nullable|date',
+            'bio' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ];
     }
