@@ -178,3 +178,24 @@ export interface Equipment {
     created_at: string;
     updated_at: string;
 }
+
+export interface Exercise {
+    id: number;
+    name: string;
+    description: string | null;
+    category: string;
+    muscle_group: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    instructions: string | null;
+    image_primary: string | null;
+    image_secondary: string | null;
+    video_url: string | null;
+    equipment_required: string | null;
+    duration_seconds: number | null;
+    calories_burned: number | null;
+    status: 'active' | 'inactive';
+    created_by: number;
+    creator?: User;
+    created_at: string;
+    updated_at: string;
+}

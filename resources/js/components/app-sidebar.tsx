@@ -16,7 +16,7 @@ import { dashboard } from '@/routes';
 import roles from '@/routes/roles';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings, Bell, Zap } from 'lucide-react';
+import { LayoutGrid, Shield, Users, CreditCard, Calendar, UserCheck, UserCog, Dumbbell, Wallet, BarChart3, Receipt, Wrench, Settings, Bell, Zap, Flame } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navSections = [
@@ -86,6 +86,12 @@ const navSections = [
                 href: '/attendances',
                 icon: UserCheck,
                 permission: 'view_attendances',
+            },
+            {
+                title: 'Exercises',
+                href: '/exercises',
+                icon: Flame,
+                permission: 'view_exercises',
             },
             {
                 title: 'Equipment',

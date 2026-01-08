@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\MemberController;
@@ -60,6 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('payments', PaymentController::class)->except(['show', 'create', 'edit']);
     Route::get('payments/{payment}/invoice', [PaymentController::class, 'invoice'])->name('payments.invoice');
     Route::resource('expenses', ExpenseController::class)->except(['show', 'create', 'edit']);
+    Route::resource('exercises', ExerciseController::class)->except(['show', 'create', 'edit']);
+    Route::patch('exercises/{exercise}/toggle-status', [ExerciseController::class, 'toggleStatus'])->name('exercises.toggle-status');
     Route::resource('equipment', EquipmentController::class)->except(['show', 'create', 'edit']);
     
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
