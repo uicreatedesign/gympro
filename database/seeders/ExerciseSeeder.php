@@ -2,126 +2,129 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Exercise;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class ExerciseSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $exercises = [
-            // Cardio Exercises
-            [
-                'name' => 'Treadmill Running',
-                'description' => 'Running or walking on a treadmill',
-                'category' => 'cardio',
-                'target_muscle' => 'legs',
-                'difficulty' => 'beginner',
-                'instructions' => 'Start with a comfortable pace. Gradually increase speed and incline as you build endurance.',
-                'video_url' => 'https://www.youtube.com/watch?v=example1',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Stationary Bike',
-                'description' => 'Cycling on a stationary bike',
-                'category' => 'cardio',
-                'target_muscle' => 'legs',
-                'difficulty' => 'beginner',
-                'instructions' => 'Adjust seat height and resistance. Maintain steady pace for cardio benefits.',
-                'video_url' => 'https://www.youtube.com/watch?v=example2',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Elliptical Training',
-                'description' => 'Low-impact cardio on elliptical machine',
-                'category' => 'cardio',
-                'target_muscle' => 'full_body',
-                'difficulty' => 'beginner',
-                'instructions' => 'Maintain good posture. Push and pull with both arms and legs simultaneously.',
-                'video_url' => 'https://www.youtube.com/watch?v=example3',
-                'is_active' => true,
-            ],
+        Exercise::truncate();
+        
+        $jsonUrl = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json';
+        
+        try {
+            $response = Http::timeout(30)->get($jsonUrl);
+            $exercises = $response->json();
 
-            // Strength Exercises
-            [
-                'name' => 'Bench Press',
-                'description' => 'Barbell bench press for chest development',
-                'category' => 'strength',
-                'target_muscle' => 'chest',
-                'difficulty' => 'intermediate',
-                'instructions' => 'Lie on bench, grip bar shoulder-width. Lower to chest, then press up explosively.',
-                'video_url' => 'https://www.youtube.com/watch?v=example4',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Squats',
-                'description' => 'Bodyweight or barbell squats',
-                'category' => 'strength',
-                'target_muscle' => 'legs',
-                'difficulty' => 'beginner',
-                'instructions' => 'Stand with feet shoulder-width. Lower as if sitting back into a chair, then stand up.',
-                'video_url' => 'https://www.youtube.com/watch?v=example5',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Deadlifts',
-                'description' => 'Conventional deadlift technique',
-                'category' => 'strength',
-                'target_muscle' => 'back',
-                'difficulty' => 'advanced',
-                'instructions' => 'Stand over bar, hinge at hips. Grip bar, keep back straight, lift by extending hips.',
-                'video_url' => 'https://www.youtube.com/watch?v=example6',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Pull-ups',
-                'description' => 'Overhand grip pull-ups',
-                'category' => 'strength',
-                'target_muscle' => 'back',
-                'difficulty' => 'intermediate',
-                'instructions' => 'Hang from bar with overhand grip. Pull body up until chin clears bar.',
-                'video_url' => 'https://www.youtube.com/watch?v=example7',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Push-ups',
-                'description' => 'Standard push-up exercise',
-                'category' => 'strength',
-                'target_muscle' => 'chest',
-                'difficulty' => 'beginner',
-                'instructions' => 'Start in plank position. Lower chest to ground, then push back up.',
-                'video_url' => 'https://www.youtube.com/watch?v=example8',
-                'is_active' => true,
-            ],
+            // Filter exercises suitable for small gym
+            $selectedExercises = $this->selectBestExercises($exercises, 50);
+            
+            $count = 0;
+            foreach ($selectedExercises as $exercise) {
+                $data = [
+                    'created_by' => 1,
+                    'name' => $exercise['name'] ?? 'Unknown',
+                    'category' => $exercise['category'] ?? 'General',
+                    'muscle_group' => $exercise['target'] ?? 'Full Body',
+                    'difficulty' => $this->mapDifficulty($exercise['equipment'] ?? ''),
+                    'description' => $exercise['name'] ?? '',
+                    'instructions' => implode('. ', $exercise['instructions'] ?? []),
+                    'equipment_required' => is_array($exercise['equipment']) ? implode(', ', $exercise['equipment']) : ($exercise['equipment'] ?? 'None'),
+                    'duration_seconds' => 60,
+                    'calories_burned' => rand(5, 15),
+                    'status' => 'active',
+                ];
 
-            // Flexibility Exercises
-            [
-                'name' => 'Yoga Flow',
-                'description' => 'Basic yoga sequence for flexibility',
-                'category' => 'flexibility',
-                'target_muscle' => 'full_body',
-                'difficulty' => 'beginner',
-                'instructions' => 'Follow sun salutation sequence. Focus on breath and gentle stretching.',
-                'video_url' => 'https://www.youtube.com/watch?v=example9',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Hamstring Stretch',
-                'description' => 'Seated hamstring stretch',
-                'category' => 'flexibility',
-                'target_muscle' => 'legs',
-                'difficulty' => 'beginner',
-                'instructions' => 'Sit with legs extended. Reach toward toes while keeping back straight.',
-                'video_url' => 'https://www.youtube.com/watch?v=example10',
-                'is_active' => true,
-            ],
+                // Download images
+                if (!empty($exercise['id'])) {
+                    $imagePath = $this->downloadImage($exercise['id'], 0);
+                    if ($imagePath) {
+                        $data['image_primary'] = $imagePath;
+                    }
+
+                    $imagePath = $this->downloadImage($exercise['id'], 1);
+                    if ($imagePath) {
+                        $data['image_secondary'] = $imagePath;
+                    }
+                }
+
+                Exercise::create($data);
+                $count++;
+            }
+
+            $this->command->info("Successfully seeded {$count} exercises optimized for small gym.");
+        } catch (\Exception $e) {
+            $this->command->error('Error: ' . $e->getMessage());
+        }
+    }
+
+    private function selectBestExercises(array $allExercises, int $limit): array
+    {
+        $categories = [
+            'strength' => 20,
+            'cardio' => 8,
+            'stretching' => 8,
+            'powerlifting' => 5,
+            'strongman' => 4,
+            'plyometrics' => 5,
         ];
 
-        foreach ($exercises as $exercise) {
-            \App\Models\Exercise::create($exercise);
+        $selected = [];
+        $categoryCount = [];
+
+        // Prioritize exercises with minimal equipment
+        $prioritized = array_filter($allExercises, function($ex) {
+            $equipment = strtolower($ex['equipment'] ?? '');
+            return in_array($equipment, ['body only', 'dumbbell', 'barbell', 'kettlebell', 'medicine ball', 'resistance band']);
+        });
+
+        foreach ($prioritized as $exercise) {
+            if (count($selected) >= $limit) break;
+            
+            $category = strtolower($exercise['category'] ?? 'strength');
+            $categoryCount[$category] = ($categoryCount[$category] ?? 0) + 1;
+            
+            if (($categoryCount[$category] ?? 0) <= ($categories[$category] ?? 10)) {
+                $selected[] = $exercise;
+            }
         }
+
+        return array_slice($selected, 0, $limit);
+    }
+
+    private function downloadImage(string $exerciseId, int $imageIndex): ?string
+    {
+        try {
+            $imageUrl = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/{$exerciseId}/{$imageIndex}.jpg";
+            $response = Http::timeout(15)->get($imageUrl);
+            
+            if ($response->successful()) {
+                $filename = 'exercises/' . uniqid() . '_' . $imageIndex . '.jpg';
+                Storage::disk('public')->put($filename, $response->body());
+                return $filename;
+            }
+        } catch (\Exception $e) {
+            // Image doesn't exist
+        }
+
+        return null;
+    }
+
+    private function mapDifficulty(string $equipment): string
+    {
+        $equipment = strtolower($equipment);
+        
+        if (in_array($equipment, ['barbell', 'cable', 'machine', 'smith machine'])) {
+            return 'intermediate';
+        }
+        
+        if (in_array($equipment, ['dumbbell', 'kettlebell', 'medicine ball', 'resistance band'])) {
+            return 'intermediate';
+        }
+
+        return 'beginner';
     }
 }
