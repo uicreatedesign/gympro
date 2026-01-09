@@ -45,7 +45,12 @@ class GoogleController extends Controller
                     $user->roles()->attach($memberRole->id);
                 }
                 
-                Member::create(['user_id' => $user->id, 'status' => 'active']);
+                Member::create([
+                    'user_id' => $user->id,
+                    'status' => 'active',
+                    'date_of_birth' => null,
+                    'join_date' => now()->toDateString(),
+                ]);
             }
         }
 
