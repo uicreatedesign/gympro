@@ -7,6 +7,7 @@ use App\Models\Member;
 use App\Models\Plan;
 use App\Models\Trainer;
 use App\Models\Payment;
+use App\Notifications\Events\SubscriptionExpiringEvent;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Collection;
@@ -60,25 +61,13 @@ class SubscriptionService
      */
     public function createSubscription(array $data): Subscription
     {
-        // Get plan details for duration calculation
         $plan = Plan::findOrFail($data['plan_id']);
         $startDate = Carbon::parse($data['start_date']);
         $data['end_date'] = $startDate->copy()->addMonths($plan->duration_months);
 
         $subscription = Subscription::create($data);
+        // Model event will trigger notification automatically
 
-        // Create notification
-        $this->notificationService->create([
-            'type' => 'subscription_created',
-            'title' => 'New Subscription Created',
-            'message' => "Subscription for {$subscription->member->user->name} has been created",
-            'data' => ['subscription_id' => $subscription->id],
-            'user_id' => $subscription->member->user_id,
-            'priority' => 'normal',
-            'color' => '#3b82f6',
-        ]);
-
-        // Auto-create payment if payment details provided
         if (!empty($data['payment_amount'])) {
             $this->createPaymentForSubscription($subscription, [
                 'amount' => $data['payment_amount'],
@@ -129,19 +118,7 @@ class SubscriptionService
         $paymentData['payment_source'] = 'manual';
 
         $payment = Payment::create($paymentData);
-
-        // Create notification for completed payments
-        if ($payment->status === 'completed') {
-            $this->notificationService->create([
-                'type' => 'payment_received',
-                'title' => 'Payment Received',
-                'message' => "Payment of ₹{$payment->amount} received for {$subscription->member->user->name}",
-                'data' => ['payment_id' => $payment->id],
-                'user_id' => $subscription->member->user_id,
-                'priority' => 'normal',
-                'color' => '#10b981',
-            ]);
-        }
+        // Model event will trigger notification automatically
 
         return $payment;
     }
@@ -179,32 +156,41 @@ class SubscriptionService
 
         foreach ($expiredSubscriptions as $subscription) {
             $subscription->update(['status' => 'expired']);
+            // Model event will trigger notification automatically
             $expiredCount++;
-
-            // Notify member about expiration
-            $this->notificationService->create([
-                'type' => 'subscription_expired',
-                'title' => 'Subscription Expired',
-                'message' => "Your subscription for {$subscription->plan->name} has expired",
-                'data' => ['subscription_id' => $subscription->id],
-                'user_id' => $subscription->member->user_id,
-                'priority' => 'high',
-                'color' => '#ef4444',
-            ]);
         }
 
         return $expiredCount;
     }
 
     /**
-     * Get subscriptions expiring soon
+     * Send notifications for subscriptions expiring soon
      */
-    public function getExpiringSoonSubscriptions(int $days = 7): Collection
+    public function notifyExpiringSubscriptions(int $days = 7): int
     {
-        return Subscription::with(['member.user', 'plan'])
+        $expiringSubscriptions = Subscription::with(['member.user', 'plan'])
             ->where('status', 'active')
             ->whereBetween('end_date', [now(), now()->addDays($days)])
             ->get();
+
+        $notifiedCount = 0;
+
+        foreach ($expiringSubscriptions as $subscription) {
+            if (!$subscription->member->user) {
+                continue;
+            }
+
+            $event = new SubscriptionExpiringEvent($subscription->member->user, [
+                'subscription_id' => $subscription->id,
+                'plan_name' => $subscription->plan->name,
+                'end_date' => $subscription->end_date->format('Y-m-d'),
+            ]);
+
+            $this->notificationService->dispatchEvent($event);
+            $notifiedCount++;
+        }
+
+        return $notifiedCount;
     }
 
     /**

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Notifications\Events\SubscriptionCreatedEvent;
+use App\Notifications\Events\SubscriptionExpiredEvent;
+use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,6 +48,47 @@ class Subscription extends Model
         return $this->hasMany(Payment::class);
     }
 
+    protected static function booted()
+    {
+        static::created(function (self $subscription) {
+            self::notifySubscriptionCreated($subscription);
+        });
+
+        static::updating(function (self $subscription) {
+            if ($subscription->isDirty('status') && $subscription->status === 'expired') {
+                self::notifySubscriptionExpired($subscription);
+            }
+        });
+    }
+
+    private static function notifySubscriptionCreated(self $subscription): void
+    {
+        if (!$subscription->member->user) {
+            return;
+        }
+
+        $event = new SubscriptionCreatedEvent($subscription->member->user, [
+            'subscription_id' => $subscription->id,
+            'plan_name' => $subscription->plan->name,
+        ]);
+
+        app(NotificationService::class)->dispatchEvent($event);
+    }
+
+    private static function notifySubscriptionExpired(self $subscription): void
+    {
+        if (!$subscription->member->user) {
+            return;
+        }
+
+        $event = new SubscriptionExpiredEvent($subscription->member->user, [
+            'subscription_id' => $subscription->id,
+            'plan_name' => $subscription->plan->name,
+        ]);
+
+        app(NotificationService::class)->dispatchEvent($event);
+    }
+
     // Computed attributes
     public function getTotalPaidAttribute()
     {
@@ -69,10 +113,8 @@ class Subscription extends Model
         return 'pending';
     }
 
-    // Auto-activate subscription when fully paid
     public function checkAndActivate()
     {
-        // Refresh to get latest payment data
         $this->refresh();
         $this->load('plan', 'payments');
         

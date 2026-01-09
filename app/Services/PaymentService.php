@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Models\User;
+use App\Notifications\Events\SubscriptionPurchasedEvent;
 use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -60,17 +62,36 @@ class PaymentService
 
         $payment = Payment::create($data);
 
-        // Create notification for completed payments
         if ($payment->status === 'completed') {
-            $this->notificationService->create([
-                'type' => 'payment_received',
-                'title' => 'Payment Received',
-                'message' => "Payment of ₹{$payment->amount} received for {$payment->subscription->member->user->name}",
-                'data' => ['payment_id' => $payment->id],
-                'user_id' => $payment->subscription->member->user_id,
-                'priority' => 'normal',
-                'color' => '#10b981',
+            $subscription = $payment->subscription->load('member.user', 'plan');
+            $member = $subscription->member;
+            $plan = $subscription->plan;
+
+            // Notify member
+            $memberEvent = new SubscriptionPurchasedEvent($member->user, [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'plan_name' => $plan->name,
+                'member_name' => $member->user->name,
+                'amount' => $payment->amount,
             ]);
+            $this->notificationService->dispatchEvent($memberEvent);
+
+            // Notify admins
+            $admins = User::whereHas('roles', function($q) {
+                $q->whereIn('name', ['Admin', 'Manager']);
+            })->get();
+            
+            foreach ($admins as $admin) {
+                $adminEvent = new SubscriptionPurchasedEvent($admin, [
+                    'subscription_id' => $subscription->id,
+                    'payment_id' => $payment->id,
+                    'plan_name' => $plan->name,
+                    'member_name' => $member->user->name,
+                    'amount' => $payment->amount,
+                ]);
+                $this->notificationService->dispatchEvent($adminEvent);
+            }
         }
 
         return $payment->fresh(['subscription.member.user', 'subscription.plan']);

@@ -7,6 +7,11 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Payment;
 use App\Models\Setting;
+use App\Models\User;
+use App\Models\Role;
+use App\Notifications\Events\SubscriptionPurchasedEvent;
+use App\Services\NotificationService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -137,7 +142,6 @@ class PhonePePaymentController extends Controller
         $member = Member::with('user')->find($pendingPayment->member_id);
         $plan = Plan::find($pendingPayment->plan_id);
 
-        // Expire old active subscriptions
         Subscription::where('member_id', $member->id)
             ->where('status', 'active')
             ->update(['status' => 'expired']);
@@ -157,7 +161,7 @@ class PhonePePaymentController extends Controller
             'status' => 'active',
         ]);
 
-        Payment::create([
+        $payment = Payment::create([
             'subscription_id' => $subscription->id,
             'amount' => $pendingPayment->amount,
             'payment_method' => 'phonepe',
@@ -169,6 +173,35 @@ class PhonePePaymentController extends Controller
         ]);
 
         DB::table('pending_payments')->where('order_id', $orderId)->delete();
+
+        // Send notifications to member and admins
+        $notificationService = app(NotificationService::class);
+        
+        // Notify member
+        $memberEvent = new SubscriptionPurchasedEvent($member->user, [
+            'subscription_id' => $subscription->id,
+            'payment_id' => $payment->id,
+            'plan_name' => $plan->name,
+            'member_name' => $member->user->name,
+            'amount' => $pendingPayment->amount,
+        ]);
+        $notificationService->dispatchEvent($memberEvent);
+
+        // Notify admins
+        $admins = User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['Admin', 'Manager']);
+        })->get();
+        
+        foreach ($admins as $admin) {
+            $adminEvent = new SubscriptionPurchasedEvent($admin, [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'plan_name' => $plan->name,
+                'member_name' => $member->user->name,
+                'amount' => $pendingPayment->amount,
+            ]);
+            $notificationService->dispatchEvent($adminEvent);
+        }
 
         return redirect()->route('member.dashboard')->with('success', 'Payment successful! Your subscription is now active.');
     }

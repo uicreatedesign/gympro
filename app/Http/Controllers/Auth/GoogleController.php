@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -38,7 +40,12 @@ class GoogleController extends Controller
                     'email_verified_at' => now(),
                 ]);
 
-                $user->roles()->attach(5);
+                $memberRole = Role::where('name', 'Member')->first();
+                if ($memberRole) {
+                    $user->roles()->attach($memberRole->id);
+                }
+                
+                Member::create(['user_id' => $user->id, 'status' => 'active']);
             }
         }
 
