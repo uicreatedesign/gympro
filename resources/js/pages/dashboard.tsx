@@ -2,6 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { Users, Calendar, TrendingUp } from 'lucide-react';
 import StatsCard from '@/components/dashboard/stats-card';
+import SubscriptionTimeline from '@/components/dashboard/subscription-timeline';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Subscription } from '@/types';
@@ -129,9 +130,8 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions, 
                     </Card>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
-
-                    <Card>
+                <div className="grid gap-4 md:grid-cols-12">
+                    <Card className="md:col-span-8">
                         <CardHeader>
                             <CardTitle>Expiring Subscriptions</CardTitle>
                             <CardDescription>Subscriptions expiring in next 7 days</CardDescription>
@@ -142,7 +142,7 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions, 
                                     {expiring_soon.map((subscription) => (
                                         <div key={subscription.id} className="flex items-center justify-between p-3 border rounded-lg">
                                             <div>
-                                                <p className="font-medium">{subscription.member?.name}</p>
+                                                <p className="font-medium">{subscription.member?.user?.name}</p>
                                                 <p className="text-sm text-muted-foreground">{subscription.plan?.name}</p>
                                             </div>
                                             <div className="text-right">
@@ -153,36 +153,15 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions, 
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No subscriptions expiring soon</p>
+                                <div className="text-center py-12">
+                                    <p className="text-muted-foreground">No data available</p>
+                                </div>
                             )}
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Recent Subscriptions</CardTitle>
-                            <CardDescription>Latest member subscriptions</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {recent_subscriptions.length > 0 ? (
-                                <div className="space-y-3">
-                                    {recent_subscriptions.map((subscription) => (
-                                        <div key={subscription.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                            <div>
-                                                <p className="font-medium">{subscription.member?.name}</p>
-                                                <p className="text-sm text-muted-foreground">{subscription.plan?.name}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-medium">₹{subscription.total_paid || 0}</p>
-                                                <Badge variant="outline" className="mt-1 border-green-200 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950">{subscription.status}</Badge>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No recent subscriptions</p>
-                            )}
-                        </CardContent>
+                    <Card className="md:col-span-4">
+                        <SubscriptionTimeline subscriptions={recent_subscriptions} />
                     </Card>
                 </div>
             </div>

@@ -30,14 +30,14 @@ class DashboardController extends Controller
                 ->sum('amount'),
         ];
 
-        $expiring_soon = Subscription::with(['member', 'plan', 'payments'])
+        $expiring_soon = Subscription::with(['member.user', 'plan', 'payments'])
             ->where('status', 'active')
             ->whereBetween('end_date', [Carbon::now(), Carbon::now()->addDays(7)])
             ->orderBy('end_date')
             ->limit(5)
             ->get();
 
-        $recent_subscriptions = Subscription::with(['member', 'plan', 'payments'])
+        $recent_subscriptions = Subscription::with(['member.user', 'plan', 'payments'])
             ->latest()
             ->limit(5)
             ->get();
