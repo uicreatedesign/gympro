@@ -1,16 +1,16 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { Bell, Maximize, Minimize } from 'lucide-react';
-import { Link, usePage } from '@inertiajs/react';
+import { Maximize, Minimize } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
+import NotificationCenter from '@/components/NotificationCenter';
 
 export function AppSidebarHeader({
     breadcrumbs = [],
@@ -19,26 +19,9 @@ export function AppSidebarHeader({
 }) {
     const { auth } = usePage().props as any;
     const user = auth?.user;
-    const [unreadCount, setUnreadCount] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const getInitials = useInitials();
     const avatarUrl = user?.profile_image ? `/storage/${user.profile_image}` : user?.avatar;
-
-    useEffect(() => {
-        fetch('/api/notifications/unread-count')
-            .then(res => res.json())
-            .then(data => setUnreadCount(data.count))
-            .catch(() => setUnreadCount(0));
-
-        const interval = setInterval(() => {
-            fetch('/api/notifications/unread-count')
-                .then(res => res.json())
-                .then(data => setUnreadCount(data.count))
-                .catch(() => {});
-        }, 30000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -61,16 +44,7 @@ export function AppSidebarHeader({
                     {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
                 </Button>
                 <AppearanceToggleDropdown className="" />
-                <Link href="/notifications">
-                    <Button variant="ghost" size="icon" className="relative">
-                        <Bell className="h-5 w-5" />
-                        {unreadCount > 0 && (
-                            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 hover:bg-red-600">
-                                {unreadCount > 99 ? '99+' : unreadCount}
-                            </Badge>
-                        )}
-                    </Button>
-                </Link>
+                <NotificationCenter />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">

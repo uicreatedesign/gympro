@@ -29,4 +29,5 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/notifications', [NotificationSettingController::class, 'index'])->name('notifications.index');
     Route::post('settings/notifications', [NotificationSettingController::class, 'update'])->name('notifications.update');
+    Route::post('settings/notifications/test', [NotificationSettingController::class, 'test'])->name('notifications.test');
 });

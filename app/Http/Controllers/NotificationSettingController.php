@@ -3,60 +3,101 @@
 namespace App\Http\Controllers;
 
 use App\Models\NotificationSetting;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class NotificationSettingController extends Controller
 {
+    private const EVENTS = [
+        'member_registered' => 'Member Registered',
+        'subscription_created' => 'Subscription Created',
+        'subscription_expiring' => 'Subscription Expiring',
+        'subscription_expired' => 'Subscription Expired',
+        'payment_received' => 'Payment Received',
+        'payment_failed' => 'Payment Failed',
+        'attendance_marked' => 'Attendance Marked',
+    ];
+
+    private const CHANNELS = ['email', 'push', 'sms', 'whatsapp'];
+
     public function index()
     {
-        $settings = [
-            'email_enabled' => NotificationSetting::where('channel', 'email')->where('event_type', 'global')->value('enabled') ?? false,
-            'whatsapp_enabled' => NotificationSetting::where('channel', 'whatsapp')->where('event_type', 'global')->value('enabled') ?? false,
-            'sms_enabled' => NotificationSetting::where('channel', 'sms')->where('event_type', 'global')->value('enabled') ?? false,
-            'push_enabled' => NotificationSetting::where('channel', 'in_app')->where('event_type', 'global')->value('enabled') ?? true,
-            'member_registered' => NotificationSetting::where('event_type', 'member_registered')->where('channel', 'in_app')->value('enabled') ?? false,
-            'subscription_created' => NotificationSetting::where('event_type', 'subscription_created')->where('channel', 'in_app')->value('enabled') ?? false,
-            'subscription_expiring' => NotificationSetting::where('event_type', 'subscription_expiring')->where('channel', 'in_app')->value('enabled') ?? false,
-            'subscription_expired' => NotificationSetting::where('event_type', 'subscription_expired')->where('channel', 'in_app')->value('enabled') ?? false,
-            'payment_received' => NotificationSetting::where('event_type', 'payment_received')->where('channel', 'in_app')->value('enabled') ?? false,
-            'payment_failed' => NotificationSetting::where('event_type', 'payment_failed')->where('channel', 'in_app')->value('enabled') ?? false,
-            'attendance_marked' => NotificationSetting::where('event_type', 'attendance_marked')->where('channel', 'in_app')->value('enabled') ?? false,
-        ];
+        $user = auth()->user();
+        $settings = [];
+
+        foreach (self::EVENTS as $eventKey => $eventLabel) {
+            $settings[$eventKey] = [];
+            foreach (self::CHANNELS as $channel) {
+                $setting = NotificationSetting::where('user_id', $user->id)
+                    ->where('event_type', $eventKey)
+                    ->where('channel', $channel)
+                    ->first();
+                $settings[$eventKey][$channel] = $setting?->enabled ?? true;
+            }
+        }
 
         return Inertia::render('settings/notifications', [
             'settings' => $settings,
+            'events' => self::EVENTS,
+            'channels' => self::CHANNELS,
         ]);
     }
 
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'email_enabled' => 'required|boolean',
-            'whatsapp_enabled' => 'required|boolean',
-            'sms_enabled' => 'required|boolean',
-            'push_enabled' => 'required|boolean',
-            'member_registered' => 'required|boolean',
-            'subscription_created' => 'required|boolean',
-            'subscription_expiring' => 'required|boolean',
-            'subscription_expired' => 'required|boolean',
-            'payment_received' => 'required|boolean',
-            'payment_failed' => 'required|boolean',
-            'attendance_marked' => 'required|boolean',
+            'settings' => 'required|array',
         ]);
 
-        NotificationSetting::updateOrCreate(['channel' => 'email', 'event_type' => 'global'], ['enabled' => $validated['email_enabled']]);
-        NotificationSetting::updateOrCreate(['channel' => 'whatsapp', 'event_type' => 'global'], ['enabled' => $validated['whatsapp_enabled']]);
-        NotificationSetting::updateOrCreate(['channel' => 'sms', 'event_type' => 'global'], ['enabled' => $validated['sms_enabled']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'global'], ['enabled' => $validated['push_enabled']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'member_registered'], ['enabled' => $validated['member_registered']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'subscription_created'], ['enabled' => $validated['subscription_created']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'subscription_expiring'], ['enabled' => $validated['subscription_expiring']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'subscription_expired'], ['enabled' => $validated['subscription_expired']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'payment_received'], ['enabled' => $validated['payment_received']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'payment_failed'], ['enabled' => $validated['payment_failed']]);
-        NotificationSetting::updateOrCreate(['channel' => 'in_app', 'event_type' => 'attendance_marked'], ['enabled' => $validated['attendance_marked']]);
+        $user = auth()->user();
 
-        return redirect()->back();
+        foreach (self::EVENTS as $eventKey => $eventLabel) {
+            foreach (self::CHANNELS as $channel) {
+                $enabled = $validated['settings'][$eventKey][$channel] ?? true;
+                NotificationSetting::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'event_type' => $eventKey,
+                        'channel' => $channel,
+                    ],
+                    ['enabled' => $enabled]
+                );
+            }
+        }
+
+        return back()->with('success', 'Notification preferences updated successfully');
+    }
+
+    public function test(Request $request)
+    {
+        $validated = $request->validate([
+            'channel' => 'required|in:email,push,sms,whatsapp',
+        ]);
+
+        $user = auth()->user();
+        $channel = $validated['channel'];
+
+        try {
+            match ($channel) {
+                'email' => \Mail::raw('This is a test notification from Gympro', function ($message) use ($user) {
+                    $message->to($user->email)->subject('Test Notification - Gympro');
+                }),
+                'push' => app(NotificationService::class)->create([
+                    'type' => 'test_notification',
+                    'title' => 'Test Notification',
+                    'message' => 'This is a test notification from Gympro',
+                    'user_id' => $user->id,
+                    'data' => ['test' => true],
+                    'priority' => 'normal',
+                    'color' => '#3b82f6',
+                ]),
+                default => null,
+            };
+
+            return response()->json(['success' => true, 'message' => "Test {$channel} notification sent"], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }
