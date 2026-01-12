@@ -76,8 +76,18 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->user()->hasPermission('create_attendances')) {
-            abort(403, 'Unauthorized action.');
+        $user = auth()->user();
+        $isMember = $user->hasPermission('view_member_dashboard');
+        
+        if ($isMember) {
+            $member = Member::where('user_id', $user->id)->first();
+            if (!$member || $member->id != $request->member_id) {
+                abort(403, 'You can only check-in yourself');
+            }
+        } else {
+            if (!$user->hasPermission('create_attendances')) {
+                abort(403, 'Unauthorized action.');
+            }
         }
 
         $validated = $request->validate($this->attendanceService->getValidationRules());
@@ -92,8 +102,18 @@ class AttendanceController extends Controller
 
     public function update(Request $request, Attendance $attendance)
     {
-        if (!auth()->user()->hasPermission('edit_attendances')) {
-            abort(403, 'Unauthorized action.');
+        $user = auth()->user();
+        $isMember = $user->hasPermission('view_member_dashboard');
+        
+        if ($isMember) {
+            $member = Member::where('user_id', $user->id)->first();
+            if (!$member || $member->id != $attendance->member_id) {
+                abort(403, 'You can only update your own attendance');
+            }
+        } else {
+            if (!$user->hasPermission('edit_attendances')) {
+                abort(403, 'Unauthorized action.');
+            }
         }
 
         $validated = $request->validate([
