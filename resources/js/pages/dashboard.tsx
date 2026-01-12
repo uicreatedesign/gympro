@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Users, Calendar, TrendingUp } from 'lucide-react';
 import StatsCard from '@/components/dashboard/stats-card';
 import SubscriptionTimeline from '@/components/dashboard/subscription-timeline';
+import { RevenueTrend } from '@/components/dashboard/revenue-trend';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Subscription } from '@/types';
@@ -19,7 +20,7 @@ interface Props {
     };
     expiring_soon: Subscription[];
     recent_subscriptions: Subscription[];
-    revenue_trend: { month: string; revenue: number }[];
+    revenue_trend: { month: string; revenue: number; expenses: number }[];
     attendance_trend: { date: string; count: number }[];
 }
 
@@ -70,35 +71,7 @@ export default function Dashboard({ stats, expiring_soon, recent_subscriptions, 
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Revenue Trend</CardTitle>
-                            <CardDescription>Last 6 months revenue performance</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={revenueChartConfig}>
-                                <BarChart data={revenue_trend}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis 
-                                        dataKey="month"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                    />
-                                    <YAxis
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    <Bar dataKey="revenue" fill="var(--color-revenue)" radius={8} />
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
+                    <RevenueTrend data={revenue_trend} />
 
                     <Card>
                         <CardHeader>

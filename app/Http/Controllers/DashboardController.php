@@ -52,6 +52,10 @@ class DashboardController extends Controller
                     ->whereMonth('payment_date', $date->month)
                     ->whereYear('payment_date', $date->year)
                     ->sum('amount'),
+                'expenses' => DB::table('expenses')
+                    ->whereMonth('expense_date', $date->month)
+                    ->whereYear('expense_date', $date->year)
+                    ->sum('amount'),
             ];
         }
 
