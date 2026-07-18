@@ -4,6 +4,9 @@ use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RedirectBasedOnRole;
+use App\Http\Middleware\SanitizeInput;
+use App\Http\Middleware\ThrottleLoginAttempts;
+use App\Http\Middleware\ValidateFileUploads;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,10 +26,13 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             RedirectBasedOnRole::class,
+            SanitizeInput::class,
+            ValidateFileUploads::class,
         ]);
 
         $middleware->alias([
             'can' => CheckPermission::class,
+            'throttle.login' => ThrottleLoginAttempts::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -94,7 +94,24 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            return [
+                Limit::perMinute(5)->by($throttleKey),
+                Limit::perHour(20)->by($throttleKey)->response(function () {
+                    return response()->json([
+                        'message' => 'Too many login attempts. Your account has been temporarily locked for 1 hour.',
+                    ], 429);
+                }),
+            ];
+        });
+        
+        // Registration rate limiting
+        RateLimiter::for('register', function (Request $request) {
+            return Limit::perHour(3)->by($request->ip());
+        });
+        
+        // Password reset rate limiting
+        RateLimiter::for('password-reset', function (Request $request) {
+            return Limit::perHour(3)->by($request->ip());
         });
     }
 }

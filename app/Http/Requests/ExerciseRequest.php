@@ -9,7 +9,12 @@ class ExerciseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return match ($this->method()) {
+            'POST' => $this->user()->hasPermission('create_exercises'),
+            'PUT', 'PATCH' => $this->user()->hasPermission('edit_exercises'),
+            'DELETE' => $this->user()->hasPermission('delete_exercises'),
+            default => false,
+        };
     }
 
     public function rules(): array
