@@ -9,6 +9,7 @@ use App\Models\Trainer;
 use App\Models\Payment;
 use App\Notifications\SubscriptionExpiringNotification;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -32,7 +33,9 @@ class SubscriptionService
             'trainer.user'
         ]) // ✅ Eager load all relationships to prevent N+1
             ->when(!empty($filters['search']), function ($q) use ($filters) {
-                $search = htmlspecialchars($filters['search'], ENT_QUOTES, 'UTF-8');
+                // Use the raw search value — Laravel query builder uses prepared
+                // statements so there is no SQL injection risk here.
+                $search = $filters['search'];
                 $q->whereHas('member.user', function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                           ->orWhere('email', 'like', "%{$search}%");
@@ -62,28 +65,33 @@ class SubscriptionService
     }
 
     /**
-     * Create a new subscription
+     * Create a new subscription with an optional initial payment.
+     *
+     * Wrapped in a DB transaction so that if payment creation fails after the
+     * subscription row is inserted, the whole operation rolls back and no
+     * orphaned subscription (with no payment record) is left behind.
      */
     public function createSubscription(array $data): Subscription
     {
-        $plan = Plan::findOrFail($data['plan_id']);
-        $startDate = Carbon::parse($data['start_date']);
-        $data['end_date'] = $startDate->copy()->addMonths($plan->duration_months);
+        return DB::transaction(function () use ($data) {
+            $plan = Plan::findOrFail($data['plan_id']);
+            $startDate = Carbon::parse($data['start_date']);
+            $data['end_date'] = $startDate->copy()->addMonths($plan->duration_months);
 
-        $subscription = Subscription::create($data);
-        // Model event will trigger notification automatically
+            $subscription = Subscription::create($data);
 
-        if (!empty($data['payment_amount'])) {
-            $this->createPaymentForSubscription($subscription, [
-                'amount' => $data['payment_amount'],
-                'payment_method' => $data['payment_method'] ?? 'cash',
-                'payment_type' => $data['payment_type'] ?? 'plan',
-                'payment_date' => $data['payment_date'] ?? now(),
-                'status' => 'completed',
-            ]);
-        }
+            if (!empty($data['payment_amount'])) {
+                $this->createPaymentForSubscription($subscription, [
+                    'amount'         => $data['payment_amount'],
+                    'payment_method' => $data['payment_method'] ?? 'cash',
+                    'payment_type'   => $data['payment_type'] ?? 'plan',
+                    'payment_date'   => $data['payment_date'] ?? now()->toDateString(),
+                    'status'         => 'completed',
+                ]);
+            }
 
-        return $subscription->fresh(['member.user', 'plan', 'payments']);
+            return $subscription->fresh(['member.user', 'plan', 'payments']);
+        });
     }
 
     /**

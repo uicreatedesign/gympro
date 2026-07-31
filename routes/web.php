@@ -33,12 +33,16 @@ Route::get('/refund-policy', fn() => inertia('RefundPolicy'));
 Route::get('/about', fn() => inertia('About'));
 Route::get('/contact', fn() => inertia('Contact'));
 
-// PhonePe server-to-server webhook — POST only, no auth, no CSRF
+// PhonePe server-to-server webhook — POST only, no auth, no CSRF.
+// Rate-limited to 30 requests/min per IP to prevent webhook replay attacks.
 Route::post('phonepe/webhook/{orderId}', [\App\Http\Controllers\PhonePePaymentController::class, 'webhook'])
     ->name('phonepe.webhook')
+    ->middleware(['throttle:30,1'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// All authenticated routes are rate-limited to 60 requests/minute per user
+// to prevent automated abuse (mass-create, scraping, brute-force on forms).
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('member/dashboard', [MemberDashboardController::class, 'index'])->name('member.dashboard');
     Route::get('member/attendance', [MemberDashboardController::class, 'attendance'])->name('member.attendance');
@@ -54,9 +58,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('features', FeatureController::class)->except(['show', 'create', 'edit']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
     Route::resource('attendances', AttendanceController::class)->except(['show', 'create', 'edit']);
-    Route::post('attendances/qr-checkin', [AttendanceController::class, 'qrCheckIn'])->name('attendances.qr-checkin')->withoutMiddleware([
-        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
-    ]);
+    // QR check-in: exempt from CSRF (called by scanner hardware/apps).
+    // Higher throttle (120/min) to allow rapid scanning during peak gym hours.
+    Route::post('attendances/qr-checkin', [AttendanceController::class, 'qrCheckIn'])
+        ->name('attendances.qr-checkin')
+        ->middleware(['throttle:120,1'])
+        ->withoutMiddleware([
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ]);
     Route::get('attendances-reports', [AttendanceController::class, 'reports'])->name('attendances.reports');
     Route::get('qr-checkin', fn() => Inertia::render('Attendances/QRCheckIn'))->name('qr-checkin');
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);

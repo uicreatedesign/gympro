@@ -33,6 +33,10 @@ class Setting extends Model
 
     public static function clearCache()
     {
-        Cache::flush();
+        // Only clear setting-specific keys — never flush the entire cache,
+        // as that would wipe sessions, plans cache, report cache, and all
+        // other cached data simultaneously for every active user.
+        Cache::forget('all_settings');
+        self::query()->pluck('key')->each(fn ($key) => Cache::forget("setting_{$key}"));
     }
 }

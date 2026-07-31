@@ -27,7 +27,8 @@ class PaymentService
             'subscription.plan'
         ]) // ✅ Eager load nested relationships
             ->when(!empty($filters['search']), function ($q) use ($filters) {
-                $search = htmlspecialchars($filters['search'], ENT_QUOTES, 'UTF-8');
+                // Use raw search value — PDO prepared statements prevent SQL injection.
+                $search = $filters['search'];
                 $q->where('invoice_number', 'like', "%{$search}%")
                   ->orWhere('transaction_id', 'like', "%{$search}%")
                   ->orWhereHas('subscription.member.user', function ($query) use ($search) {

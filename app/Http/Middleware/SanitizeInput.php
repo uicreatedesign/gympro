@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class SanitizeInput
 {
     /**
-     * Fields that should not be sanitized (e.g., password fields)
+     * Fields that should not be sanitized (e.g., password fields).
      */
     protected array $except = [
         'password',
@@ -21,7 +21,7 @@ class SanitizeInput
     public function handle(Request $request, Closure $next): Response
     {
         $input = $request->all();
-        
+
         array_walk_recursive($input, function (&$value, $key) {
             if (!in_array($key, $this->except) && is_string($value)) {
                 $value = $this->sanitize($value);
@@ -34,19 +34,23 @@ class SanitizeInput
     }
 
     /**
-     * Sanitize the given value
+     * Sanitize the given value.
+     *
+     * We intentionally do NOT call htmlspecialchars() here.
+     * Reasons:
+     *   1. Laravel's query builder uses PDO prepared statements — there is no
+     *      SQL injection risk from raw string values.
+     *   2. Encoding at storage time (middleware) causes double-encoding when
+     *      React renders the value (React auto-escapes HTML on output), and
+     *      it corrupts search queries, PDF invoices, and CSV exports.
+     *   3. HTML encoding is the view layer's responsibility, not storage.
+     *
+     * We only remove null bytes, which are a genuine storage attack vector
+     * (they can truncate strings in C-based libraries).
      */
     protected function sanitize(string $value): string
     {
-        // Remove any null bytes
-        $value = str_replace(chr(0), '', $value);
-        
-        // Strip tags except allowed ones
-        $value = strip_tags($value, '<p><br><strong><em><u><a><ul><ol><li>');
-        
-        // Convert special characters to HTML entities
-        $value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
-        
-        return $value;
+        // Remove null bytes — the only true string-level threat for PHP/MySQL.
+        return str_replace(chr(0), '', $value);
     }
 }
